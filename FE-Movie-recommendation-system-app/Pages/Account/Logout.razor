@@ -1,0 +1,11 @@
+﻿@page "/account/logout"
+@inject IAccountService AccountService
+@inject AppState AppState
+
+@code {
+    protected override async void OnInitialized()
+    {
+        await AccountService.Logout();
+        AppState.LoggedIn = false;
+    }
+}
