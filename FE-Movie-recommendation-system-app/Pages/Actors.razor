@@ -1,0 +1,60 @@
+﻿@page "/movies/{MovieId}"
+@inject IHttpService http
+
+@if (Message != null)
+{
+    @Message
+    <br />
+}
+else
+{
+    @if (Movie == null)
+    {
+        <p><em>Loading...</em></p>
+    }
+    else
+    {
+        <h3>Actors from @Movie.Title</h3>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Age</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var actor in actors)
+                {
+                    <tr>
+                        <td>@actor.Name</td>
+                        <td>@actor.Age</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+}
+
+
+@code {
+
+    [Parameter] public string MovieId { get; set; }
+
+    private Movie Movie { get; set; }
+    private List<Actor> actors = new List<Actor>();
+    private string Message { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            Movie = await http.Get<Movie>($"/api/v1/movies/{int.Parse(MovieId)}");
+            actors = await http.Get<List<Actor>>($"/api/v1/actors/movies/{int.Parse(MovieId)}");
+        }
+        catch (Exception ex)
+        {
+            Message = ex.Message;
+            StateHasChanged();
+        }
+    }
+}
