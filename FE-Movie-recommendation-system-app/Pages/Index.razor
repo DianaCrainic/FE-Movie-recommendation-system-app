@@ -1,5 +1,7 @@
 ﻿@page "/"
 @inject IAccountService AccountService
+@inject IHttpService http
+@inject NavigationManager navigationManager
 
 <div class="p-4">
     <div class="container">
@@ -14,3 +16,58 @@
         <p>Welcome to Movie Recommendation System!!</p>
     </div>
 </div>
+
+<h3>Movies</h3>
+
+
+@if (movies == null)
+{
+    <p><em>Loading...</em></p>
+}
+
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Release Year</th>
+                <th>Movie Genres</th>
+                <th>Actors</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var movie in movies)
+            {
+            <tr>
+                <td>@movie.Title</td>
+                <td>@movie.ReleaseYear</td>
+
+                <td>
+                    @foreach (var genre in movie.Genres)
+                    {
+                        <span>@genre.Name</span>
+                    }
+                </td>
+
+                <td><span class="oi oi-people" @onclick="() => RedirectToActors(movie.Id)"></span></td>
+            </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<Movie> movies = new List<Movie>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        movies = await http.Get<List<Movie>>("/api/v1/movies");
+    }
+
+    private void RedirectToActors(int MovieId)
+    {
+        navigationManager.NavigateTo($"/movies/{MovieId}");
+    }
+}
+
