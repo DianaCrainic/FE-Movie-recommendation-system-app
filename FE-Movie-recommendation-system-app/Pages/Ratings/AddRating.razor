@@ -46,6 +46,7 @@ else
 
     private async void OnValidSubmit()
     {
+        Loading = true;
         AddRatingRequest.MovieId = int.Parse(MovieId);
         AddRatingRequest.userId = AccountService.User.Id;
 
