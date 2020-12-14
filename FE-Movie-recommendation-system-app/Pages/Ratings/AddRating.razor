@@ -1,0 +1,64 @@
+﻿@page "/ratings/movie/{MovieId}"
+@inject IHttpService http
+@inject IAccountService AccountService
+@inject NavigationManager NavigationManager
+@inject AppState AppState
+
+
+@if (!AppState.LoggedIn)
+{
+    NavigationManager.NavigateTo("account/login");
+}
+else
+{
+    <div class="card">
+        <h4 class="card-header">Add rating</h4>
+        <div class="card-body">
+            <EditForm Model="@AddRatingRequest" OnValidSubmit="OnValidSubmit">
+                <DataAnnotationsValidator />
+                <div class="form-group">
+                    <label>Value</label>
+                    <InputNumber @bind-Value="AddRatingRequest.Value" class="form-control"/>
+                    <ValidationMessage For="@(() => AddRatingRequest.Value)" />
+                </div>
+                @if (Message != null)
+                {
+                    @Message <br />
+                }
+                <button disabled="@Loading" class="btn btn-primary">
+                    @if (Loading)
+                    {
+                        <span class="spinner-border spinner-border-sm mr-1"></span>
+                    }
+                    Submit
+                </button>
+            </EditForm>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public string MovieId { get; set; }
+
+    private AddRatingRequest AddRatingRequest = new AddRatingRequest();
+    private bool Loading { get; set; }
+    private string Message { get; set; }
+
+    private async void OnValidSubmit()
+    {
+        AddRatingRequest.MovieId = int.Parse(MovieId);
+        AddRatingRequest.userId = AccountService.User.Id;
+
+        try
+        {
+            await http.Post("/api/v1/ratings", AddRatingRequest);
+            NavigationManager.NavigateTo("/");
+        }
+        catch (Exception ex)
+        {
+            Message = ex.Message;
+            Loading = false;
+            StateHasChanged();
+        }
+    }
+}

@@ -1,0 +1,73 @@
+﻿@page "/ratings"
+@inject IHttpService http
+@inject IAccountService AccountService
+@inject AppState AppState
+@inject NavigationManager NavigationManager
+
+
+@if (Message != null)
+{
+    @Message
+    <br />
+}
+else
+{
+    @if (ratings == null)
+    {
+        <p><em>Loading...</em></p>
+    }
+    else
+    {
+        @if (ratings.Count == 0)
+        {
+            <p>You have no ratings yet</p>
+        }
+        else
+        {
+            <h3>Your ratings</h3>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Movie</th>
+                        <th>Rating</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var rating in ratings)
+                    {
+                        <tr>
+                            <td>@rating.Movie.Title</td>
+                            <td>@rating.Value</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    }
+}
+
+
+@code {
+    private List<Rating> ratings = new List<Rating>();
+    private string Message { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            if (!AppState.LoggedIn)
+            {
+                NavigationManager.NavigateTo("account/login");
+            }
+            else
+            {
+                ratings = await http.Get<List<Rating>>($"/api/v1/ratings/users/{AccountService.User.Id}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Message = ex.Message;
+            StateHasChanged();
+        }
+    }
+}

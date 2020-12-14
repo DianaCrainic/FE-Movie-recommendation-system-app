@@ -1,6 +1,7 @@
 ﻿@page "/"
 @inject IAccountService AccountService
 @inject IHttpService http
+@inject AppState AppState
 @inject NavigationManager navigationManager
 
 <div class="p-4">
@@ -24,7 +25,6 @@
 {
     <p><em>Loading...</em></p>
 }
-
 else
 {
     <table class="table">
@@ -34,24 +34,40 @@ else
                 <th>Release Year</th>
                 <th>Movie Genres</th>
                 <th>Actors</th>
+                @if (AppState.LoggedIn)
+                {
+                    <th>Rating</th>
+                }
             </tr>
         </thead>
         <tbody>
             @foreach (var movie in movies)
             {
-            <tr>
-                <td>@movie.Title</td>
-                <td>@movie.ReleaseYear</td>
+                <tr>
+                    <td>@movie.Title</td>
+                    <td>@movie.ReleaseYear</td>
 
-                <td>
-                    @foreach (var genre in movie.Genres)
+                    <td>
+                        @foreach (var genre in movie.Genres)
+                        {
+                            <span>@genre.Name</span>
+                        }
+                    </td>
+
+                    <td><span class="oi oi-people" @onclick="() => RedirectToActors(movie.Id)"></span></td>
+
+                    @if (AppState.LoggedIn)
                     {
-                        <span>@genre.Name</span>
+                        @if (ratings.Exists(r => r.Movie.Id == movie.Id))
+                        {
+                            <td>@ratings.Find(r => r.Movie.Id == movie.Id).Value</td>
+                        }
+                        else
+                        {
+                            <td><span class="oi oi-plus" @onclick="() => RedirectToAddRating(movie.Id)"></span></td>
+                        }
                     }
-                </td>
-
-                <td><span class="oi oi-people" @onclick="() => RedirectToActors(movie.Id)"></span></td>
-            </tr>
+                </tr>
             }
         </tbody>
     </table>
@@ -59,15 +75,26 @@ else
 
 @code {
     private List<Movie> movies = new List<Movie>();
+    private List<Rating> ratings = new List<Rating>();
 
     protected override async Task OnInitializedAsync()
     {
         movies = await http.Get<List<Movie>>("/api/v1/movies");
+
+        if (AppState.LoggedIn)
+        {
+            ratings = await http.Get<List<Rating>>($"/api/v1/ratings/users/{AccountService.User.Id}");
+        }
     }
 
     private void RedirectToActors(int MovieId)
     {
         navigationManager.NavigateTo($"/movies/{MovieId}");
+    }
+
+    private void RedirectToAddRating(int MovieId)
+    {
+        navigationManager.NavigateTo($"/ratings/movie/{MovieId}");
     }
 }
 
