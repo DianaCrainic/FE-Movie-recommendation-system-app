@@ -1,0 +1,46 @@
+﻿@page "/ratings/movie/{MovieId}"
+@inject IHttpService http
+@inject IAccountService AccountService
+@inject NavigationManager NavigationManager
+@inject AppState AppState
+
+@if (Message != null)
+{
+    @Message
+    <br />
+}
+else
+{
+
+   
+}
+
+@code {
+    [Parameter] public string MovieId { get; set; }
+    private LoginRequest LoginRequest = new LoginRequest();
+    private string val;
+
+
+    private AddRatingRequest AddRatingRequest = new AddRatingRequest();
+    private bool Loading { get; set; }
+    private string Message { get; set; }
+
+    private async void OnValidSubmit()
+    {
+        AddRatingRequest.MovieId = int.Parse(MovieId);
+        AddRatingRequest.UserId = AccountService.User.Id;
+
+        try
+        {
+            await http.Post("/api/v1/ratings", AddRatingRequest);
+            NavigationManager.NavigateTo("/");
+        }
+        catch (Exception ex)
+        {
+            Message = ex.Message;
+            Loading = false;
+            StateHasChanged();
+        }
+    }
+
+}

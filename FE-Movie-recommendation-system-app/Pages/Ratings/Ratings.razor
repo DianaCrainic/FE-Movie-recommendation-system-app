@@ -1,0 +1,62 @@
+﻿@page "/ratings/{UserId}"
+@inject IHttpService http
+@inject AppState AppState
+
+@if (Message != null)
+{
+    @Message
+    <br />
+}
+else
+{
+    @if (ratings == null)
+    {
+        <p><em>Loading...</em></p>
+    }
+    else
+    {
+        <h3>List of all my ratings:</h3>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Movie</th>
+                    <th>Rating</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var rating in ratings)
+                {
+                    <tr>
+                        <td>@rating.Movie.Title</td>
+                        <td>@rating.Value</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+}
+
+
+@code {
+
+    [Parameter] public string UserId { get; set; }
+
+    private Rating Rating { get; set; }
+
+    private List<Rating> ratings = new List<Rating>();
+    private string Message { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+
+            ratings = await http.Get<List<Rating>>($"/api/v1/ratings/users/{int.Parse(UserId)}");
+        }
+        catch (Exception ex)
+        {
+            Message = ex.Message;
+            StateHasChanged();
+        }
+    }
+}
