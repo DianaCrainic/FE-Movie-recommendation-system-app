@@ -2,7 +2,6 @@
 using System.Text.Json;
 using System.Threading.Tasks;
 
-
 public class LocalStorageService : ILocalStorageService
 {
     private IJSRuntime _jsRuntime;
