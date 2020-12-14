@@ -8,7 +8,7 @@ namespace FE_Movie_recommendation_system_app
 {
     public class Program
     {
-        private static string _baseUrl = "http://localhost:50928";
+        private static string _baseUrl = "http://localhost:5000";
         public static async Task Main(string[] args)
         {
             var builder = WebAssemblyHostBuilder.CreateDefault(args);

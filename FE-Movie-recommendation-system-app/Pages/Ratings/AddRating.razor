@@ -4,22 +4,41 @@
 @inject NavigationManager NavigationManager
 @inject AppState AppState
 
-@if (Message != null)
+
+@if (!AppState.LoggedIn)
 {
-    @Message
-    <br />
+    NavigationManager.NavigateTo("account/login");
 }
 else
 {
-
-   
+    <div class="card">
+        <h4 class="card-header">Add rating</h4>
+        <div class="card-body">
+            <EditForm Model="@AddRatingRequest" OnValidSubmit="OnValidSubmit">
+                <DataAnnotationsValidator />
+                <div class="form-group">
+                    <label>Value</label>
+                    <InputNumber @bind-Value="AddRatingRequest.Value" class="form-control"/>
+                    <ValidationMessage For="@(() => AddRatingRequest.Value)" />
+                </div>
+                @if (Message != null)
+                {
+                    @Message <br />
+                }
+                <button disabled="@Loading" class="btn btn-primary">
+                    @if (Loading)
+                    {
+                        <span class="spinner-border spinner-border-sm mr-1"></span>
+                    }
+                    Submit
+                </button>
+            </EditForm>
+        </div>
+    </div>
 }
 
 @code {
     [Parameter] public string MovieId { get; set; }
-    private LoginRequest LoginRequest = new LoginRequest();
-    private string val;
-
 
     private AddRatingRequest AddRatingRequest = new AddRatingRequest();
     private bool Loading { get; set; }
@@ -28,7 +47,7 @@ else
     private async void OnValidSubmit()
     {
         AddRatingRequest.MovieId = int.Parse(MovieId);
-        AddRatingRequest.UserId = AccountService.User.Id;
+        AddRatingRequest.userId = AccountService.User.Id;
 
         try
         {
@@ -42,5 +61,4 @@ else
             StateHasChanged();
         }
     }
-
 }

@@ -25,24 +25,24 @@
 {
     <p><em>Loading...</em></p>
 }
-
 else
 {
-    if (AppState.LoggedIn)
-    {
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>Title</th>
-                    <th>Release Year</th>
-                    <th>Movie Genres</th>
-                    <th>Actors</th>
-                    <th>Rating</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var movie in movies)
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Release Year</th>
+                <th>Movie Genres</th>
+                <th>Actors</th>
+                @if (AppState.LoggedIn)
                 {
+                    <th>Rating</th>
+                }
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var movie in movies)
+            {
                 <tr>
                     <td>@movie.Title</td>
                     <td>@movie.ReleaseYear</td>
@@ -56,64 +56,35 @@ else
 
                     <td><span class="oi oi-people" @onclick="() => RedirectToActors(movie.Id)"></span></td>
 
-                    @if (ratings.Exists(r => r.Movie.Id == movie.Id))
+                    @if (AppState.LoggedIn)
                     {
-                        <td> @ratings.Find(r => r.Movie.Id == movie.Id).Value </td>
-                    }
-                    else
-                    {
-                        <td><span class="oi oi-plus" @onclick="() => RedirectToAddRating(movie.Id)"></span></td>
+                        @if (ratings.Exists(r => r.Movie.Id == movie.Id))
+                        {
+                            <td>@ratings.Find(r => r.Movie.Id == movie.Id).Value</td>
+                        }
+                        else
+                        {
+                            <td><span class="oi oi-plus" @onclick="() => RedirectToAddRating(movie.Id)"></span></td>
+                        }
                     }
                 </tr>
-                }
-                </tbody>
-            </table>
             }
-            else
-            {
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Title</th>
-                        <th>Release Year</th>
-                        <th>Movie Genres</th>
-                        <th>Actors</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var movie in movies)
-                    {
-                    <tr>
-                        <td>@movie.Title</td>
-                        <td>@movie.ReleaseYear</td>
+        </tbody>
+    </table>
+}
 
-                        <td>
-                            @foreach (var genre in movie.Genres)
-                            {
-                            <span>@genre.Name</span>
-                            }
-                        </td>
+@code {
+    private List<Movie> movies = new List<Movie>();
+    private List<Rating> ratings = new List<Rating>();
 
-                        <td><span class="oi oi-people" @onclick="() => RedirectToActors(movie.Id)"></span></td>
-                    </tr>
-                    }
-                </tbody>
-            </table>
-            }
-            }
+    protected override async Task OnInitializedAsync()
+    {
+        movies = await http.Get<List<Movie>>("/api/v1/movies");
 
-            @code {
-            private List<Movie>
-                movies = new List<Movie>
-                    ();
-                    private List<Rating>
-                        ratings = new List<Rating>
-                            ();
-
-                            protected override async Task OnInitializedAsync()
-                            {
-                            movies = await http.Get<List<Movie>>("/api/v1/movies");
-        ratings = await http.Get<List<Rating>>("/api/v1/ratings");
+        if (AppState.LoggedIn)
+        {
+            ratings = await http.Get<List<Rating>>($"/api/v1/ratings/users/{AccountService.User.Id}");
+        }
     }
 
     private void RedirectToActors(int MovieId)

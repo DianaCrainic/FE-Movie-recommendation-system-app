@@ -43,6 +43,5 @@ public class AccountService : IAccountService
     {
         await _httpService.Post("/api/v1/users", registerRequest);
     }
-
 }
 

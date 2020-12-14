@@ -31,19 +31,16 @@
         }
         else
         {
-            var link = "ratings/" + @AccountService.User.Id;
             <li class="nav-item px-3">
-                <NavLink class="nav-link" href="@link">
+                <NavLink class="nav-link" href="ratings">
                     <span class="oi oi-align-center" aria-hidden="true"></span> My ratings
                 </NavLink>
             </li>
-
             <li class="nav-item px-3">
                 <NavLink class="nav-link" href="account/logout">
                     <span class="oi oi-account-logout" aria-hidden="true"></span> Logout
                 </NavLink>
             </li>
-
         }
     </ul>
 </div>
