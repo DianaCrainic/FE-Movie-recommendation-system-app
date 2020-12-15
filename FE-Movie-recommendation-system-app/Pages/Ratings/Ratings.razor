@@ -1,13 +1,13 @@
 ﻿@page "/ratings"
-@inject IHttpService http
+@inject IHttpService Http
 @inject IAccountService AccountService
 @inject AppState AppState
 @inject NavigationManager NavigationManager
 
 
-@if (Message != null)
+@if (message != null)
 {
-    @Message
+    @message
     <br />
 }
 else
@@ -49,7 +49,7 @@ else
 
 @code {
     private List<Rating> ratings = new List<Rating>();
-    private string Message { get; set; }
+    private string message { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -57,16 +57,16 @@ else
         {
             if (!AppState.LoggedIn)
             {
-                NavigationManager.NavigateTo("account/login");
+                NavigationManager.NavigateTo(PagesConstants.LoginPage);
             }
             else
             {
-                ratings = await http.Get<List<Rating>>($"/api/v1/ratings/users/{AccountService.User.Id}");
+                ratings = await Http.Get<List<Rating>>($"{APIConstants.RatingsForUserEndpoint}/{AccountService.User.Id}");
             }
         }
         catch (Exception ex)
         {
-            Message = ex.Message;
+            message = ex.Message;
             StateHasChanged();
         }
     }

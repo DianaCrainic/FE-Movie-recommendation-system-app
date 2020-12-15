@@ -6,11 +6,11 @@ public class RegisterRequest
         public string Username { get; set; }
 
         [Required]
-        [EmailAddress(ErrorMessage = "Invalid email")]
+        [EmailAddress(ErrorMessage = ModelConstants.InvalidEmailErrorMessage)]
         public string Email { get; set; }
 
         [Required]
-        [MinLength(6, ErrorMessage = "The Password field must be a minimum of 6 characters")]
+        [MinLength(6, ErrorMessage = ModelConstants.InvalidPasswordLengthErrorMessage)]
         public string Password { get; set; }
 }
 

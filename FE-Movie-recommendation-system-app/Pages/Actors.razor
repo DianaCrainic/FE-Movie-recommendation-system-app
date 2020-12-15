@@ -1,20 +1,20 @@
 ﻿@page "/movies/{MovieId}"
-@inject IHttpService http
+@inject IHttpService Http
 
-@if (Message != null)
+@if (message != null)
 {
-    @Message
+    @message
     <br />
 }
 else
 {
-    @if (Movie == null)
+    @if (movie == null)
     {
         <p><em>Loading...</em></p>
     }
     else
     {
-        <h3>Actors from @Movie.Title</h3>
+        <h3>Actors from @movie.Title</h3>
         <table class="table">
             <thead>
                 <tr>
@@ -40,20 +40,20 @@ else
 
     [Parameter] public string MovieId { get; set; }
 
-    private Movie Movie { get; set; }
+    private Movie movie { get; set; }
     private List<Actor> actors = new List<Actor>();
-    private string Message { get; set; }
+    private string message { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
-            Movie = await http.Get<Movie>($"/api/v1/movies/{int.Parse(MovieId)}");
-            actors = await http.Get<List<Actor>>($"/api/v1/actors/movies/{int.Parse(MovieId)}");
+            movie = await Http.Get<Movie>($"{APIConstants.MoviesEndpoint}/{int.Parse(MovieId)}");
+            actors = await Http.Get<List<Actor>>($"{APIConstants.ActorsFromMovieEndpoint}/{int.Parse(MovieId)}");
         }
         catch (Exception ex)
         {
-            Message = ex.Message;
+            message = ex.Message;
             StateHasChanged();
         }
     }

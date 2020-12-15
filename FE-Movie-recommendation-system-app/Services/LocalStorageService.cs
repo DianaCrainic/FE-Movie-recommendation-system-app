@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 public class LocalStorageService : ILocalStorageService
 {
-    private IJSRuntime _jsRuntime;
+    private readonly IJSRuntime _jsRuntime;
 
     public LocalStorageService(IJSRuntime jsRuntime)
     {
@@ -13,7 +13,7 @@ public class LocalStorageService : ILocalStorageService
 
     public async Task<T> GetItem<T>(string key)
     {
-        var json = await _jsRuntime.InvokeAsync<string>("localStorage.getItem", key);
+        var json = await _jsRuntime.InvokeAsync<string>(LocalStorageConstants.GetItem, key);
 
         if (json == null)
             return default;
@@ -23,12 +23,12 @@ public class LocalStorageService : ILocalStorageService
 
     public async Task SetItem<T>(string key, T value)
     {
-        await _jsRuntime.InvokeVoidAsync("localStorage.setItem", key, JsonSerializer.Serialize(value));
+        await _jsRuntime.InvokeVoidAsync(LocalStorageConstants.SetItem, key, JsonSerializer.Serialize(value));
     }
 
     public async Task RemoveItem(string key)
     {
-        await _jsRuntime.InvokeVoidAsync("localStorage.removeItem", key);
+        await _jsRuntime.InvokeVoidAsync(LocalStorageConstants.RemoveItem, key);
     }
 }
 
