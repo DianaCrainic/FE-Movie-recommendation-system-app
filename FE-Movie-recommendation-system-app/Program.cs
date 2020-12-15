@@ -8,7 +8,6 @@ namespace FE_Movie_recommendation_system_app
 {
     public class Program
     {
-        private static string _baseUrl = "http://localhost:5000";
         public static async Task Main(string[] args)
         {
             var builder = WebAssemblyHostBuilder.CreateDefault(args);
@@ -19,7 +18,7 @@ namespace FE_Movie_recommendation_system_app
                 .AddScoped<IHttpService, HttpService>()
                 .AddScoped<ILocalStorageService, LocalStorageService>();
 
-            builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(_baseUrl) });
+            builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(APIConstants.BaseUrl) });
             builder.Services.AddSingleton<AppState>();
 
 

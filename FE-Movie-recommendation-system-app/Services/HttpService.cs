@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Components;
-using Microsoft.Extensions.Configuration;
-using System;
+﻿using System;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
@@ -10,22 +8,16 @@ using System.Threading.Tasks;
 
 public class HttpService : IHttpService
 {
-    private HttpClient _httpClient;
-    private NavigationManager _navigationManager;
-    private ILocalStorageService _localStorageService;
-    private readonly IConfiguration _configuration;
+    private readonly HttpClient _httpClient;
+    private readonly ILocalStorageService _localStorageService;
 
     public HttpService(
         HttpClient httpClient,
-        NavigationManager navigationManager,
-        ILocalStorageService localStorageService,
-        IConfiguration configuration
+        ILocalStorageService localStorageService
     )
     {
         _httpClient = httpClient;
-        _navigationManager = navigationManager;
         _localStorageService = localStorageService;
-        _configuration = configuration;
     }
 
     public async Task<T> Get<T>(string uri)
@@ -75,7 +67,7 @@ public class HttpService : IHttpService
         var request = new HttpRequestMessage(method, uri);
         if (value != null)
         {
-            request.Content = new StringContent(JsonSerializer.Serialize(value), Encoding.UTF8, "application/json");
+            request.Content = new StringContent(JsonSerializer.Serialize(value), Encoding.UTF8, APIConstants.JsonContent);
         }
         return request;
     }
@@ -107,11 +99,11 @@ public class HttpService : IHttpService
 
     private async Task AddJwtHeader(HttpRequestMessage request)
     {
-        var user = await _localStorageService.GetItem<User>("user");
+        var user = await _localStorageService.GetItem<User>(LocalStorageConstants.UserItem);
         var isApiUrl = !request.RequestUri.IsAbsoluteUri;
         if (user != null && isApiUrl)
         {
-            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", user.Token);
+            request.Headers.Authorization = new AuthenticationHeaderValue(APIConstants.AuthenticationHeaderValueBearer, user.Token);
         }
     }
 

@@ -1,5 +1,5 @@
 ﻿@page "/ratings/movie/{MovieId}"
-@inject IHttpService http
+@inject IHttpService Http
 @inject IAccountService AccountService
 @inject NavigationManager NavigationManager
 @inject AppState AppState
@@ -14,19 +14,19 @@ else
     <div class="card">
         <h4 class="card-header">Add rating</h4>
         <div class="card-body">
-            <EditForm Model="@AddRatingRequest" OnValidSubmit="OnValidSubmit">
+            <EditForm Model="@addRatingRequest" OnValidSubmit="OnValidSubmit">
                 <DataAnnotationsValidator />
                 <div class="form-group">
                     <label>Value</label>
-                    <InputNumber @bind-Value="AddRatingRequest.Value" class="form-control"/>
-                    <ValidationMessage For="@(() => AddRatingRequest.Value)" />
+                    <InputNumber @bind-Value="addRatingRequest.Value" class="form-control"/>
+                    <ValidationMessage For="@(() => addRatingRequest.Value)" />
                 </div>
-                @if (Message != null)
+                @if (message != null)
                 {
-                    @Message <br />
+                    @message <br />
                 }
-                <button disabled="@Loading" class="btn btn-primary">
-                    @if (Loading)
+                <button disabled="@loading" class="btn btn-primary">
+                    @if (loading)
                     {
                         <span class="spinner-border spinner-border-sm mr-1"></span>
                     }
@@ -40,25 +40,25 @@ else
 @code {
     [Parameter] public string MovieId { get; set; }
 
-    private AddRatingRequest AddRatingRequest = new AddRatingRequest();
-    private bool Loading { get; set; }
-    private string Message { get; set; }
+    private AddRatingRequest addRatingRequest = new AddRatingRequest();
+    private bool loading { get; set; }
+    private string message { get; set; }
 
     private async void OnValidSubmit()
     {
-        Loading = true;
-        AddRatingRequest.MovieId = int.Parse(MovieId);
-        AddRatingRequest.userId = AccountService.User.Id;
+        loading = true;
+        addRatingRequest.MovieId = int.Parse(MovieId);
+        addRatingRequest.userId = AccountService.User.Id;
 
         try
         {
-            await http.Post("/api/v1/ratings", AddRatingRequest);
-            NavigationManager.NavigateTo("/");
+            await Http.Post(APIConstants.RatingsEndpoint, addRatingRequest);
+            NavigationManager.NavigateTo(PagesConstants.HomePage);
         }
         catch (Exception ex)
         {
-            Message = ex.Message;
-            Loading = false;
+            message = ex.Message;
+            loading = false;
             StateHasChanged();
         }
     }

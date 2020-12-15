@@ -6,24 +6,24 @@
 <div class="card">
     <h4 class="card-header">Login</h4>
     <div class="card-body">
-        <EditForm Model="@LoginRequest" OnValidSubmit="OnValidSubmit">
+        <EditForm Model="@loginRequest" OnValidSubmit="OnValidSubmit">
             <DataAnnotationsValidator />
             <div class="form-group">
                 <label>Username</label>
-                <InputText @bind-Value="LoginRequest.Username" class="form-control" />
-                <ValidationMessage For="@(() => LoginRequest.Username)" />
+                <InputText @bind-Value="loginRequest.Username" class="form-control" />
+                <ValidationMessage For="@(() => loginRequest.Username)" />
             </div>
             <div class="form-group">
                 <label>Password</label>
-                <InputText @bind-Value="LoginRequest.Password" type="password" class="form-control" />
-                <ValidationMessage For="@(() => LoginRequest.Password)" />
+                <InputText @bind-Value="loginRequest.Password" type="password" class="form-control" />
+                <ValidationMessage For="@(() => loginRequest.Password)" />
             </div>
-            @if (Message != null)
+            @if (message != null)
             {
-                @Message <br />
+                @message <br />
             }
-            <button disabled="@Loading" class="btn btn-primary">
-                @if (Loading)
+            <button disabled="@loading" class="btn btn-primary">
+                @if (loading)
                 {
                     <span class="spinner-border spinner-border-sm mr-1"></span>
                 }
@@ -35,23 +35,23 @@
 </div>
 
 @code {
-    private LoginRequest LoginRequest = new LoginRequest();
-    private bool Loading { get; set; }
-    private string Message { get; set; }
+    private LoginRequest loginRequest = new LoginRequest();
+    private bool loading { get; set; }
+    private string message { get; set; }
 
     private async void OnValidSubmit()
     {
-        Loading = true;
+        loading = true;
         try
         {
-            await AccountService.Login(LoginRequest);
+            await AccountService.Login(loginRequest);
             AppState.LoggedIn = true;
-            NavigationManager.NavigateTo("/");
+            NavigationManager.NavigateTo(PagesConstants.HomePage);
         }
         catch (Exception ex)
         {
-            Message = ex.Message;
-            Loading = false;
+            message = ex.Message;
+            loading = false;
             StateHasChanged();
         }
     }

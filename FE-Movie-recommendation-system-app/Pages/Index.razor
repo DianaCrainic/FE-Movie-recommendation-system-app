@@ -1,8 +1,8 @@
 ﻿@page "/"
 @inject IAccountService AccountService
-@inject IHttpService http
+@inject IHttpService Http
 @inject AppState AppState
-@inject NavigationManager navigationManager
+@inject NavigationManager NavigationManager
 
 <div class="p-4">
     <div class="container">
@@ -79,22 +79,22 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        movies = await http.Get<List<Movie>>("/api/v1/movies");
+        movies = await Http.Get<List<Movie>>(APIConstants.MoviesEndpoint);
 
         if (AppState.LoggedIn)
         {
-            ratings = await http.Get<List<Rating>>($"/api/v1/ratings/users/{AccountService.User.Id}");
+            ratings = await Http.Get<List<Rating>>($"{APIConstants.RatingsForUserEndpoint}/{AccountService.User.Id}");
         }
     }
 
     private void RedirectToActors(int MovieId)
     {
-        navigationManager.NavigateTo($"/movies/{MovieId}");
+        NavigationManager.NavigateTo($"{PagesConstants.ActorsFromMoviePage}/{MovieId}");
     }
 
     private void RedirectToAddRating(int MovieId)
     {
-        navigationManager.NavigateTo($"/ratings/movie/{MovieId}");
+        NavigationManager.NavigateTo($"{PagesConstants.AddRatingToMoviePage}/{MovieId}");
     }
 }
 
