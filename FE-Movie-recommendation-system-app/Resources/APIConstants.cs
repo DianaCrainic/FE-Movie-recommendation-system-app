@@ -9,4 +9,5 @@
     public const string RatingsForUserEndpoint = "/api/v1/ratings/users";
     public const string MoviesEndpoint = "/api/v1/movies";
     public const string ActorsFromMovieEndpoint = "/api/v1/actors/movies";
+    public const string RecommendationsForUserEndpoint = "/api/v1/recommendations";
 }

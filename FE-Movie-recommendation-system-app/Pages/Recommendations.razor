@@ -1,0 +1,97 @@
+﻿@page "/recommendations"
+@inject IAccountService AccountService
+@inject IHttpService Http
+@inject AppState AppState
+@inject NavigationManager NavigationManager
+
+
+
+@if (message != null)
+{
+    @message
+    <br />
+}
+else
+{
+    @if (movies == null)
+    {
+        <p><em>Loading...</em></p>
+    }
+    else
+    {
+        <button action="action"
+                onclick="window.history.go(-1); return false;"
+                type="submit" class="oi oi-arrow-thick-left"
+                style="background-color: white; width: 60px; height: 30px; border: none; margin-bottom: 20px">
+        </button>
+
+
+        <h3>Recommendations for @AccountService.User.Username</h3>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Release Year</th>
+                    <th>Movie Genres</th>
+                    <th>Actors</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var movie in movies)
+                {
+                    <tr>
+                        <td>@movie.Title</td>
+                        <td>@movie.ReleaseYear</td>
+
+                        <td>
+                            @foreach (var genre in movie.Genres)
+                            {
+                                <span>@genre.Name</span>
+                            }
+                        </td>
+
+                        <td><span class="oi oi-people" @onclick="() => RedirectToActors(movie.Id)"></span></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+    }
+}
+
+
+@code {
+    private List<Movie> movies = new List<Movie>();
+    private string message { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            if (!AppState.LoggedIn)
+            {
+                NavigationManager.NavigateTo(PagesConstants.LoginPage);
+            }
+            else
+            {
+                movies = await Http.Get<List<Movie>>($"{APIConstants.RecommendationsForUserEndpoint}/{AccountService.User.Id}");
+            }
+        }
+        catch (Exception ex)
+        {
+            message = ex.Message;
+            StateHasChanged();
+        }
+    }
+
+    private void RedirectToActors(int MovieId)
+    {
+        NavigationManager.NavigateTo($"{PagesConstants.ActorsFromMoviePage}/{MovieId}");
+    }
+
+    private void RedirectToAddRating(int MovieId)
+    {
+        NavigationManager.NavigateTo($"{PagesConstants.AddRatingToMoviePage}/{MovieId}");
+    }
+}
+
