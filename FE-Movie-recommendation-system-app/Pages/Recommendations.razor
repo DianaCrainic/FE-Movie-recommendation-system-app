@@ -5,7 +5,6 @@
 @inject NavigationManager NavigationManager
 
 
-
 @if (message != null)
 {
     @message
@@ -46,7 +45,7 @@ else
                         <td>
                             @foreach (var genre in movie.Genres)
                             {
-                                <span>@genre.Name</span>
+                                <span style="padding:5px">@genre.Name</span>
                             }
                         </td>
 
@@ -55,7 +54,6 @@ else
                 }
             </tbody>
         </table>
-
     }
 }
 
@@ -94,4 +92,3 @@ else
         NavigationManager.NavigateTo($"{PagesConstants.AddRatingToMoviePage}/{MovieId}");
     }
 }
-

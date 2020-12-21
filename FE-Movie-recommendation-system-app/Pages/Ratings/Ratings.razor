@@ -36,15 +36,20 @@ else
                     <tr>
                         <th>Movie</th>
                         <th>Rating</th>
+                        <th>Update rating</th>
+                        <th>Delete rating</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach (var rating in ratings)
                     {
-                        <tr>
-                            <td>@rating.Movie.Title</td>
-                            <td>@rating.Value</td>
-                        </tr>
+                    <tr>
+                        <td>@rating.Movie.Title</td>
+                        <td>@rating.Value</td>
+                        <td><span class="oi oi-action-undo" @onclick="() => RedirectToUpdateRating(rating.Movie.Id)"></span></td>
+                        <td><span class="oi oi-circle-x" @onclick="() => RedirectToDeleteRating(rating.Movie.Id)"></span></td>
+
+                    </tr>
                     }
                 </tbody>
             </table>
@@ -56,6 +61,9 @@ else
 @code {
     private List<Rating> ratings = new List<Rating>();
     private string message { get; set; }
+
+    private DeleteRatingRequest DeleteRatingRequest = new DeleteRatingRequest();
+    private bool Loading { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -73,6 +81,31 @@ else
         catch (Exception ex)
         {
             message = ex.Message;
+            StateHasChanged();
+        }
+    }
+
+    private void RedirectToUpdateRating(int MovieId)
+    {
+        NavigationManager.NavigateTo($"{PagesConstants.UpdateRatingPage}/{MovieId}");
+    }
+
+    private async void RedirectToDeleteRating(int MovieId)
+    {
+        Loading = true;
+        DeleteRatingRequest.MovieId = MovieId;
+        DeleteRatingRequest.userId = AccountService.User.Id;
+
+        try
+        {
+            await Http.Delete(APIConstants.RatingsEndpoint, DeleteRatingRequest);
+            ratings.RemoveAll(r => r.Movie.Id == MovieId);
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            message = ex.Message;
+            Loading = false;
             StateHasChanged();
         }
     }
