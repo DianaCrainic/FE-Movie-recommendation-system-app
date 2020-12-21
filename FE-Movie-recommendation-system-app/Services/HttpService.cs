@@ -56,6 +56,12 @@ public class HttpService : IHttpService
         await SendRequest(request);
     }
 
+    public async Task Delete(string uri, object value)
+    {
+        var request = CreateRequest(HttpMethod.Delete, uri, value);
+        await SendRequest(request);
+    }
+
     public async Task<T> Delete<T>(string uri)
     {
         var request = CreateRequest(HttpMethod.Delete, uri);

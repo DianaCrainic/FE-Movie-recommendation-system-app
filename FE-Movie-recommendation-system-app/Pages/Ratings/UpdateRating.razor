@@ -1,0 +1,71 @@
+﻿@page "/ratings/update/{MovieId}"
+@inject IHttpService Http
+@inject IAccountService AccountService
+@inject NavigationManager NavigationManager
+@inject AppState AppState
+
+
+@if (!AppState.LoggedIn)
+{
+    NavigationManager.NavigateTo("account/login");
+}
+else
+{
+    <button action="action"
+            onclick="window.history.go(-1); return false;"
+            type="submit" class="oi oi-arrow-thick-left"
+            style="background-color: white; width: 60px; height: 30px; border: none; margin-bottom: 20px">
+    </button>
+
+    <div class="card">
+        <h4 class="card-header">Change rating</h4>
+        <div class="card-body">
+            <EditForm Model="@UpdateRatingRequest" OnValidSubmit="OnValidSubmit">
+                <DataAnnotationsValidator />
+                <div class="form-group">
+                    <label>Value</label>
+                    <InputNumber @bind-Value="UpdateRatingRequest.Value" class="form-control" />
+                    <ValidationMessage For="@(() => UpdateRatingRequest.Value)" />
+                </div>
+                @if (Message != null)
+                {
+                    @Message <br />
+                }
+                <button disabled="@Loading" class="btn btn-primary">
+                    @if (Loading)
+                    {
+                        <span class="spinner-border spinner-border-sm mr-1"></span>
+                    }
+                    Submit
+                </button>
+            </EditForm>
+        </div>
+    </div>
+
+}
+
+@code {
+    [Parameter] public string MovieId { get; set; }
+
+    private UpdateRatingRequest UpdateRatingRequest = new UpdateRatingRequest();
+    private bool Loading { get; set; }
+    private string Message { get; set; }
+
+    private async void OnValidSubmit()
+    {
+        UpdateRatingRequest.MovieId = int.Parse(MovieId);
+        UpdateRatingRequest.userId = AccountService.User.Id;
+
+        try
+        {
+            await Http.Put(APIConstants.RatingsEndpoint, UpdateRatingRequest);
+            NavigationManager.NavigateTo("/");
+        }
+        catch (Exception ex)
+        {
+            Message = ex.Message;
+            Loading = false;
+            StateHasChanged();
+        }
+    }
+}
