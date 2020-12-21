@@ -41,7 +41,6 @@ else
             </EditForm>
         </div>
     </div>
-
 }
 
 @code {
@@ -59,7 +58,7 @@ else
         try
         {
             await Http.Put(APIConstants.RatingsEndpoint, UpdateRatingRequest);
-            NavigationManager.NavigateTo("/");
+            NavigationManager.NavigateTo($"{PagesConstants.MyRatings}");
         }
         catch (Exception ex)
         {

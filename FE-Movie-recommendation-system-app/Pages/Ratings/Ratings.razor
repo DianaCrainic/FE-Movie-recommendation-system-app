@@ -92,7 +92,6 @@ else
 
     private async void RedirectToDeleteRating(int MovieId)
     {
-
         Loading = true;
         DeleteRatingRequest.MovieId = MovieId;
         DeleteRatingRequest.userId = AccountService.User.Id;
@@ -100,7 +99,8 @@ else
         try
         {
             await Http.Delete(APIConstants.RatingsEndpoint, DeleteRatingRequest);
-            NavigationManager.NavigateTo(PagesConstants.HomePage);
+            ratings.RemoveAll(r => r.Movie.Id == MovieId);
+            StateHasChanged();
         }
         catch (Exception ex)
         {

@@ -59,7 +59,7 @@ else
         try
         {
             await Http.Post(APIConstants.RatingsEndpoint, addRatingRequest);
-            NavigationManager.NavigateTo(PagesConstants.HomePage);
+            NavigationManager.NavigateTo($"{PagesConstants.MyRatings}");
         }
         catch (Exception ex)
         {
