@@ -50,6 +50,13 @@ else
     private bool Loading { get; set; }
     private string Message { get; set; }
 
+    protected override async Task OnInitializedAsync()
+    {
+        List<Rating> ratings = await Http.Get<List<Rating>>($"{APIConstants.RatingsForUserEndpoint}/{AccountService.User.Id}");
+        Rating currentRating = ratings.Where(r => r.Movie.Id == int.Parse(MovieId)).FirstOrDefault();
+        UpdateRatingRequest.Value = currentRating.Value;
+    }
+
     private async void OnValidSubmit()
     {
         UpdateRatingRequest.MovieId = int.Parse(MovieId);
