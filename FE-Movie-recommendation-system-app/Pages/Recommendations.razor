@@ -27,7 +27,7 @@ else
 
         <h3>Recommendations for @AccountService.User.Username</h3>
         <table class="table">
-            <thead>
+            <thead style="background-image: linear-gradient(180deg, rgb(5, 39, 103) 0%, #3a0647 70%); color:white">
                 <tr>
                     <th>Title</th>
                     <th>Release Year</th>
@@ -40,7 +40,7 @@ else
                 {
                     <tr>
                         <td>@movie.Title</td>
-                        <td>@movie.ReleaseYear</td>
+                        <td style="padding-left:30px;">@movie.ReleaseYear</td>
 
                         <td>
                             @foreach (var genre in movie.Genres)
@@ -49,7 +49,7 @@ else
                             }
                         </td>
 
-                        <td><span class="oi oi-people" @onclick="() => RedirectToActors(movie.Id)"></span></td>
+                        <td style="padding-left:30px;"><span class="oi oi-people" @onclick="() => RedirectToActors(movie.Id)"></span></td>
                     </tr>
                 }
             </tbody>

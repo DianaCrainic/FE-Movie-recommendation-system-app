@@ -32,7 +32,7 @@ else
         {
             <h3>My ratings</h3>
             <table class="table">
-                <thead>
+                <thead style="background-image: linear-gradient(180deg, rgb(5, 39, 103) 0%, #3a0647 70%); color:white">
                     <tr>
                         <th>Movie</th>
                         <th>Rating</th>
@@ -45,9 +45,9 @@ else
                     {
                     <tr>
                         <td>@rating.Movie.Title</td>
-                        <td>@rating.Value</td>
-                        <td><span class="oi oi-action-undo" @onclick="() => RedirectToUpdateRating(rating.Movie.Id)"></span></td>
-                        <td><span class="oi oi-circle-x" @onclick="() => RedirectToDeleteRating(rating.Movie.Id)"></span></td>
+                        <td style="padding-left:30px;">@rating.Value</td>
+                        <td style="padding-left:30px;"><span class="oi oi-action-undo" @onclick="() => RedirectToUpdateRating(rating.Movie.Id)"></span></td>
+                        <td style="padding-left:30px;"><span class="oi oi-circle-x" @onclick="() => RedirectToDeleteRating(rating.Movie.Id)"></span></td>
 
                     </tr>
                     }

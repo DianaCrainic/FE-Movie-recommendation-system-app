@@ -1,8 +1,11 @@
 ﻿@page "/"
 @inject IAccountService AccountService
 @inject IHttpService Http
+@inject HttpClient HttpClient
 @inject AppState AppState
 @inject NavigationManager NavigationManager
+@using System.IO
+@using System.Text.Json
 
 <div class="p-4">
     <div class="container">
@@ -28,7 +31,7 @@
 else
 {
     <table class="table">
-        <thead>
+        <thead style="background-image: linear-gradient(180deg, rgb(5, 39, 103) 0%, #3a0647 70%); color:white">
             <tr>
                 <th>Title</th>
                 <th>Release Year</th>
@@ -45,7 +48,7 @@ else
             {
                 <tr>
                     <td>@movie.Title</td>
-                    <td>@movie.ReleaseYear</td>
+                    <td style="padding-left:30px;">@movie.ReleaseYear</td>
 
                     <td>
                         @foreach (var genre in movie.Genres)
@@ -54,7 +57,7 @@ else
                         }
                     </td>
 
-                    <td><span class="oi oi-people" @onclick="() => RedirectToActors(movie.Id)"></span></td>
+                    <td style="padding-left:30px;"><span class="oi oi-people" @onclick="() => RedirectToActors(movie.Id)"></span></td>
 
                     @if (AppState.LoggedIn)
                     {
@@ -71,20 +74,40 @@ else
             }
         </tbody>
     </table>
+    <Pagination TotalPages="totalPages" CurrentPage="currentPage" Radius="2" SelectedPage="SelectedPage"></Pagination>
 }
 
 @code {
     private List<Movie> movies = new List<Movie>();
     private List<Rating> ratings = new List<Rating>();
+    private int totalPages;
+    private int currentPage = 1;
 
     protected override async Task OnInitializedAsync()
     {
-        movies = await Http.Get<List<Movie>>(APIConstants.MoviesEndpoint);
-
+        await LoadMovies();
         if (AppState.LoggedIn)
         {
             ratings = await Http.Get<List<Rating>>($"{APIConstants.RatingsForUserEndpoint}/{AccountService.User.Id}");
         }
+    }
+
+    async Task LoadMovies(int page = 1, int entitiesPerPage = 10)
+    {
+        var response = await HttpClient.GetAsync($"{APIConstants.MoviesEndpoint}?page={page}&entitiesPerPage={entitiesPerPage}");
+        if (response.IsSuccessStatusCode)
+        {
+            totalPages = int.Parse(response.Headers.GetValues(APIConstants.NumberOfPagesHeader).FirstOrDefault());
+            var responseString = await response.Content.ReadAsStringAsync();
+            movies = JsonSerializer.Deserialize<List<Movie>>(responseString,
+                new JsonSerializerOptions() { PropertyNameCaseInsensitive = true });
+        }
+    }
+
+    private async Task SelectedPage(int page)
+    {
+        currentPage = page;
+        await LoadMovies(page);
     }
 
     private void RedirectToActors(int MovieId)
