@@ -4,7 +4,6 @@
 @inject HttpClient HttpClient
 @inject AppState AppState
 @inject NavigationManager NavigationManager
-@using System.IO
 @using System.Text.Json
 
 <div class="p-4">
@@ -21,7 +20,7 @@
     </div>
 </div>
 
-<h3>Movies</h3>
+<h2>Movies</h2>
 
 
 @if (movies == null)
@@ -30,12 +29,15 @@
 }
 else
 {
+    <input placeholder="Title" @bind-value="searchTerm" @bind-value:event="oninput" style="font-size: 18px ; margin-top: 20px; margin-bottom: 20px"/>
+    <span @onclick="async () => await SelectedPage(1)" class="oi oi-magnifying-glass" style="font-size: 22px"></span>
+
     <table class="table">
         <thead style="background-image: linear-gradient(180deg, rgb(5, 39, 103) 0%, #3a0647 70%); color:white">
             <tr>
                 <th>Title</th>
                 <th>Release Year</th>
-                <th>Movie Genres</th>
+                <th>Genres</th>
                 <th>Actors</th>
                 @if (AppState.LoggedIn)
                 {
@@ -82,6 +84,7 @@ else
     private List<Rating> ratings = new List<Rating>();
     private int totalPages;
     private int currentPage = 1;
+    private string searchTerm = "";
 
     protected override async Task OnInitializedAsync()
     {
@@ -92,9 +95,14 @@ else
         }
     }
 
-    async Task LoadMovies(int page = 1, int entitiesPerPage = 10)
+    private async Task LoadMovies(int page = 1, int entitiesPerPage = 10)
     {
-        var response = await HttpClient.GetAsync($"{APIConstants.MoviesEndpoint}?page={page}&entitiesPerPage={entitiesPerPage}");
+        string endpoint = $"{APIConstants.MoviesEndpoint}?page={page}&entitiesPerPage={entitiesPerPage}";
+        if (searchTerm != "")
+        {
+            endpoint = $"{endpoint}&title={searchTerm}";
+        }
+        var response = await HttpClient.GetAsync(endpoint);
         if (response.IsSuccessStatusCode)
         {
             totalPages = int.Parse(response.Headers.GetValues(APIConstants.NumberOfPagesHeader).FirstOrDefault());
