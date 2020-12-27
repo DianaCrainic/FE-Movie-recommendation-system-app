@@ -53,7 +53,7 @@ else
     protected override async Task OnInitializedAsync()
     {
         List<Rating> ratings = await Http.Get<List<Rating>>($"{APIConstants.RatingsForUserEndpoint}/{AccountService.User.Id}");
-        Rating currentRating = ratings.Where(r => r.Movie.Id == int.Parse(MovieId)).FirstOrDefault();
+        Rating currentRating = ratings.Where(r => r.MovieId == int.Parse(MovieId)).FirstOrDefault();
         UpdateRatingRequest.Value = currentRating.Value;
     }
 

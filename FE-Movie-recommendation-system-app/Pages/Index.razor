@@ -63,9 +63,9 @@ else
 
                     @if (AppState.LoggedIn)
                     {
-                        @if (ratings.Exists(r => r.Movie.Id == movie.Id))
+                        @if (ratings.Exists(r => r.MovieId == movie.Id))
                         {
-                            <td>@ratings.Find(r => r.Movie.Id == movie.Id).Value</td>
+                            <td>@ratings.Find(r => r.MovieId == movie.Id).Value</td>
                         }
                         else
                         {

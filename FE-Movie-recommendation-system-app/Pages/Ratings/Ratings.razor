@@ -44,10 +44,10 @@ else
                     @foreach (var rating in ratings)
                     {
                     <tr>
-                        <td>@rating.Movie.Title</td>
+                        <td>@movies.Where(m => m.Id == rating.MovieId).First().Title</td>
                         <td style="padding-left:30px;">@rating.Value</td>
-                        <td style="padding-left:30px;"><span class="oi oi-action-undo" @onclick="() => RedirectToUpdateRating(rating.Movie.Id)"></span></td>
-                        <td style="padding-left:30px;"><span class="oi oi-circle-x" @onclick="() => RedirectToDeleteRating(rating.Movie.Id)"></span></td>
+                        <td style="padding-left:30px;"><span class="oi oi-action-undo" @onclick="() => RedirectToUpdateRating(rating.MovieId)"></span></td>
+                        <td style="padding-left:30px;"><span class="oi oi-circle-x" @onclick="() => RedirectToDeleteRating(rating.MovieId)"></span></td>
 
                     </tr>
                     }
@@ -60,6 +60,7 @@ else
 
 @code {
     private List<Rating> ratings = new List<Rating>();
+    private List<Movie> movies = new List<Movie>();
     private string message { get; set; }
 
     private DeleteRatingRequest DeleteRatingRequest = new DeleteRatingRequest();
@@ -76,6 +77,10 @@ else
             else
             {
                 ratings = await Http.Get<List<Rating>>($"{APIConstants.RatingsForUserEndpoint}/{AccountService.User.Id}");
+                foreach (Rating rating in ratings)
+                {
+                    movies.Add(await GetMovieById(rating.MovieId));
+                }
             }
         }
         catch (Exception ex)
@@ -83,6 +88,11 @@ else
             message = ex.Message;
             StateHasChanged();
         }
+    }
+
+    private Task<Movie> GetMovieById(int id)
+    {
+        return Http.Get<Movie>($"{APIConstants.MoviesEndpoint}/{id}");
     }
 
     private void RedirectToUpdateRating(int MovieId)
@@ -99,7 +109,7 @@ else
         try
         {
             await Http.Delete(APIConstants.RatingsEndpoint, DeleteRatingRequest);
-            ratings.RemoveAll(r => r.Movie.Id == MovieId);
+            ratings.RemoveAll(r => r.MovieId == MovieId);
             StateHasChanged();
         }
         catch (Exception ex)
