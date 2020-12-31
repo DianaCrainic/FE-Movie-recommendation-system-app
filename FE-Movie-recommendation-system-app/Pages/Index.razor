@@ -20,64 +20,70 @@
     </div>
 </div>
 
-<h2>Movies</h2>
+<link href="_content/BlazorPro.Spinkit/spinkit.min.css" rel="stylesheet" />
+<SpinLoader IsLoading="isLoading">
+    <LoadingTemplate>
+        <div class="col-12" style="height: 400px; vertical-align:middle">
+            <br /><br />
+            <Circle Center="true" Color="#9400D3" Size="70px"></Circle>
+        </div>
+    </LoadingTemplate>
+    <ContentTemplate>
+        @if (movies != null)
+        {
+            <h2>Movies</h2>
 
+            <input placeholder="Title" @bind-value="searchTerm" @bind-value:event="oninput" style="font-size: 18px ; margin-top: 20px; margin-bottom: 20px" />
+            <span @onclick="async () => await SelectedPage(1)" class="oi oi-magnifying-glass" style="font-size: 22px"></span>
 
-@if (movies == null)
-{
-    <p><em>Loading...</em></p>
-}
-else
-{
-    <input placeholder="Title" @bind-value="searchTerm" @bind-value:event="oninput" style="font-size: 18px ; margin-top: 20px; margin-bottom: 20px"/>
-    <span @onclick="async () => await SelectedPage(1)" class="oi oi-magnifying-glass" style="font-size: 22px"></span>
-
-    <table class="table">
-        <thead style="background-image: linear-gradient(180deg, rgb(5, 39, 103) 0%, #3a0647 70%); color:white">
-            <tr>
-                <th>Title</th>
-                <th>Release Year</th>
-                <th>Genres</th>
-                <th>Actors</th>
-                @if (AppState.LoggedIn)
-                {
-                    <th>Rating</th>
-                }
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var movie in movies)
-            {
-                <tr>
-                    <td>@movie.Title</td>
-                    <td style="padding-left:30px;">@movie.ReleaseYear</td>
-
-                    <td>
-                        @foreach (var genre in movie.Genres)
+            <table class="table">
+                <thead style="background-image: linear-gradient(180deg, rgb(5, 39, 103) 0%, #3a0647 70%); color:white">
+                    <tr>
+                        <th>Title</th>
+                        <th>Release Year</th>
+                        <th>Genres</th>
+                        <th>Actors</th>
+                        @if (AppState.LoggedIn)
                         {
-                            <span style="padding:5px">@genre.Name</span>
+                            <th>Rating</th>
                         }
-                    </td>
-
-                    <td style="padding-left:30px;"><span class="oi oi-people" @onclick="() => RedirectToActors(movie.Id)"></span></td>
-
-                    @if (AppState.LoggedIn)
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var movie in movies)
                     {
-                        @if (ratings.Exists(r => r.MovieId == movie.Id))
-                        {
-                            <td>@ratings.Find(r => r.MovieId == movie.Id).Value</td>
-                        }
-                        else
-                        {
-                            <td><span class="oi oi-plus" @onclick="() => RedirectToAddRating(movie.Id)"></span></td>
-                        }
+                        <tr>
+                            <td>@movie.Title</td>
+                            <td style="padding-left:30px;">@movie.ReleaseYear</td>
+
+                            <td>
+                                @foreach (var genre in movie.Genres)
+                                {
+                                    <span style="padding:5px">@genre.Name</span>
+                                }
+                            </td>
+
+                            <td style="padding-left:30px;"><span class="oi oi-people" @onclick="() => RedirectToActors(movie.Id)"></span></td>
+
+                            @if (AppState.LoggedIn)
+                            {
+                                @if (ratings.Exists(r => r.MovieId == movie.Id))
+                                {
+                                    <td>@ratings.Find(r => r.MovieId == movie.Id).Value</td>
+                                }
+                                else
+                                {
+                                    <td><span class="oi oi-plus" @onclick="() => RedirectToAddRating(movie.Id)"></span></td>
+                                }
+                            }
+                        </tr>
                     }
-                </tr>
-            }
-        </tbody>
-    </table>
-    <Pagination TotalPages="totalPages" CurrentPage="currentPage" Radius="2" SelectedPage="SelectedPage"></Pagination>
-}
+                </tbody>
+            </table>
+            <Pagination TotalPages="totalPages" CurrentPage="currentPage" Radius="2" SelectedPage="SelectedPage"></Pagination>
+        }
+    </ContentTemplate>
+</SpinLoader>
 
 @code {
     private List<Movie> movies = new List<Movie>();
@@ -85,10 +91,15 @@ else
     private int totalPages;
     private int currentPage = 1;
     private string searchTerm = "";
+    bool isLoading = true;
 
     protected override async Task OnInitializedAsync()
     {
         await LoadMovies();
+
+        isLoading = false;
+        StateHasChanged();
+
         if (AppState.LoggedIn)
         {
             ratings = await Http.Get<List<Rating>>($"{APIConstants.RatingsForUserEndpoint}/{AccountService.User.Id}");

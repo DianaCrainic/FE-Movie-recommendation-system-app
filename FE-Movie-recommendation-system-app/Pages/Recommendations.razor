@@ -12,55 +12,63 @@
 }
 else
 {
-    @if (movies == null)
-    {
-        <p><em>Loading...</em></p>
-    }
-    else
-    {
-        <button action="action"
-                onclick="window.history.go(-1); return false;"
-                type="submit" class="oi oi-arrow-thick-left"
-                style="background-color: white; width: 60px; height: 30px; border: none; margin-bottom: 20px">
-        </button>
+    <link href="_content/BlazorPro.Spinkit/spinkit.min.css" rel="stylesheet" />
+    <SpinLoader IsLoading="isLoading">
+        <LoadingTemplate>
+            <div class="col-12" style="height: 400px; vertical-align:middle">
+                <br /><br />
+                <Circle Center="true" Color="#9400D3" Size="70px"></Circle>
+            </div>
+        </LoadingTemplate>
+        <ContentTemplate>
+            @if (movies != null)
+            {
+                <button action="action"
+                        onclick="window.history.go(-1); return false;"
+                        type="submit" class="oi oi-arrow-thick-left"
+                        style="background-color: white; width: 60px; height: 30px; border: none; margin-bottom: 20px">
+                </button>
 
 
-        <h3>Recommendations for @AccountService.User.Username</h3>
-        <table class="table">
-            <thead style="background-image: linear-gradient(180deg, rgb(5, 39, 103) 0%, #3a0647 70%); color:white">
-                <tr>
-                    <th>Title</th>
-                    <th>Release Year</th>
-                    <th>Movie Genres</th>
-                    <th>Actors</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var movie in movies)
-                {
-                    <tr>
-                        <td>@movie.Title</td>
-                        <td style="padding-left:30px;">@movie.ReleaseYear</td>
+                <h3>Recommendations for @AccountService.User.Username</h3>
+                <table class="table">
+                    <thead style="background-image: linear-gradient(180deg, rgb(5, 39, 103) 0%, #3a0647 70%); color:white">
+                        <tr>
+                            <th>Title</th>
+                            <th>Release Year</th>
+                            <th>Movie Genres</th>
+                            <th>Actors</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var movie in movies)
+                        {
+                            <tr>
+                                <td>@movie.Title</td>
+                                <td style="padding-left:30px;">@movie.ReleaseYear</td>
 
-                        <td>
-                            @foreach (var genre in movie.Genres)
-                            {
-                                <span style="padding:5px">@genre.Name</span>
-                            }
-                        </td>
+                                <td>
+                                    @foreach (var genre in movie.Genres)
+                                    {
+                                        <span style="padding:5px">@genre.Name</span>
+                                    }
+                                </td>
 
-                        <td style="padding-left:30px;"><span class="oi oi-people" @onclick="() => RedirectToActors(movie.Id)"></span></td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    }
+                                <td style="padding-left:30px;"><span class="oi oi-people" @onclick="() => RedirectToActors(movie.Id)"></span></td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        </ContentTemplate>
+    </SpinLoader>
 }
 
 
 @code {
     private List<Movie> movies = new List<Movie>();
     private string message { get; set; }
+    bool isLoading = true;
 
     protected override async Task OnInitializedAsync()
     {
@@ -73,6 +81,9 @@ else
             else
             {
                 movies = await Http.Get<List<Movie>>($"{APIConstants.RecommendationsForUserEndpoint}/{AccountService.User.Id}");
+
+                isLoading = false;
+                StateHasChanged();
             }
         }
         catch (Exception ex)
