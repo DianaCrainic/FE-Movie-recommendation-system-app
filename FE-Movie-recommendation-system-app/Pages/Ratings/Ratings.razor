@@ -12,56 +12,65 @@
 }
 else
 {
-    @if (ratings == null)
-    {
-        <p><em>Loading...</em></p>
-    }
-    else
-    {
-        <button action="action"
-                onclick="window.history.go(-1); return false;"
-                type="submit" class="oi oi-arrow-thick-left"
-                style="background-color: white; width: 60px; height: 30px; border: none; margin-bottom: 20px">
-        </button> 
+    <link href="_content/BlazorPro.Spinkit/spinkit.min.css" rel="stylesheet" />
+    <SpinLoader IsLoading="isLoading">
+        <LoadingTemplate>
+            <div class="col-12" style="height: 400px; vertical-align:middle">
+                <br /><br />
+                <Circle Center="true" Color="#9400D3" Size="70px"></Circle>
+            </div>
+        </LoadingTemplate>
+        <ContentTemplate>
+            @if (ratings != null)
+            { 
+                <button action="action"
+                        onclick="window.history.go(-1); return false;"
+                        type="submit" class="oi oi-arrow-thick-left"
+                        style="background-color: white; width: 60px; height: 30px; border: none; margin-bottom: 20px">
+                </button>
 
-        @if (ratings.Count == 0)
-        {
-            <p>You have no ratings yet</p>
-        }
-        else
-        {
-            <h3>My ratings</h3>
-            <table class="table">
-                <thead style="background-image: linear-gradient(180deg, rgb(5, 39, 103) 0%, #3a0647 70%); color:white">
-                    <tr>
-                        <th>Movie</th>
-                        <th>Rating</th>
-                        <th>Update rating</th>
-                        <th>Delete rating</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var rating in ratings)
-                    {
-                    <tr>
-                        <td>@movies.Where(m => m.Id == rating.MovieId).First().Title</td>
-                        <td style="padding-left:30px;">@rating.Value</td>
-                        <td style="padding-left:30px;"><span class="oi oi-action-undo" @onclick="() => RedirectToUpdateRating(rating.MovieId)"></span></td>
-                        <td style="padding-left:30px;"><span class="oi oi-circle-x" @onclick="() => RedirectToDeleteRating(rating.MovieId)"></span></td>
+                @if (ratings.Count == 0)
+                {
+                    <p>You have no ratings yet</p>
+                }
+                else
+                {
+                    <h3>My ratings</h3>
+                    <table class="table">
+                        <thead style="background-image: linear-gradient(180deg, rgb(5, 39, 103) 0%, #3a0647 70%); color:white">
+                            <tr>
+                                <th>Movie</th>
+                                <th>Rating</th>
+                                <th>Update rating</th>
+                                <th>Delete rating</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var rating in ratings)
+                            {
+                                <tr>
+                                    <td>@movies.Where(m => m.Id == rating.MovieId).First().Title</td>
+                                    <td style="padding-left:30px;">@rating.Value</td>
+                                    <td style="padding-left:30px;"><span class="oi oi-action-undo" @onclick="() => RedirectToUpdateRating(rating.MovieId)"></span></td>
+                                    <td style="padding-left:30px;"><span class="oi oi-circle-x" @onclick="() => RedirectToDeleteRating(rating.MovieId)"></span></td>
 
-                    </tr>
-                    }
-                </tbody>
-            </table>
-        }
-    }
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+            }
+
+        </ContentTemplate>
+    </SpinLoader>
 }
 
 
-@code {
-    private List<Rating> ratings = new List<Rating>();
+    @code {
+    private List<Rating> ratings;
     private List<Movie> movies = new List<Movie>();
     private string message { get; set; }
+    bool isLoading = true;
 
     private DeleteRatingRequest DeleteRatingRequest = new DeleteRatingRequest();
     private bool Loading { get; set; }
@@ -81,6 +90,9 @@ else
                 {
                     movies.Add(await GetMovieById(rating.MovieId));
                 }
+
+                isLoading = false;
+                StateHasChanged();
             }
         }
         catch (Exception ex)
@@ -119,4 +131,4 @@ else
             StateHasChanged();
         }
     }
-}
+    }

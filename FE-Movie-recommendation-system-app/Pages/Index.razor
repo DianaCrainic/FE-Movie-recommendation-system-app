@@ -20,8 +20,6 @@
     </div>
 </div>
 
-<h2>Movies</h2>
-
 <link href="_content/BlazorPro.Spinkit/spinkit.min.css" rel="stylesheet" />
 <SpinLoader IsLoading="isLoading">
     <LoadingTemplate>
@@ -33,6 +31,8 @@
     <ContentTemplate>
         @if (movies != null)
         {
+            <h2>Movies</h2>
+
             <input placeholder="Title" @bind-value="searchTerm" @bind-value:event="oninput" style="font-size: 18px ; margin-top: 20px; margin-bottom: 20px" />
             <span @onclick="async () => await SelectedPage(1)" class="oi oi-magnifying-glass" style="font-size: 22px"></span>
 
