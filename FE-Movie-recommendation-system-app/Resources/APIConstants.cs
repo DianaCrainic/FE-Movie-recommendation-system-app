@@ -11,4 +11,5 @@
     public const string ActorsFromMovieEndpoint = "/actors/movies";
     public const string RecommendationsForUserEndpoint = "/recommendations";
     public const string NumberOfPagesHeader = "numberOfPages";
+    public const string MovieGenresEndpoint = "/genres";
 }
