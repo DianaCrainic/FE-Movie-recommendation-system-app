@@ -5,7 +5,58 @@
 @inject AppState AppState
 @inject NavigationManager NavigationManager
 @using System.Text.Json
+@using System
 
+<head>
+<style>
+    .dropbtn {
+        background-image: linear-gradient(#0C2262, #380647);
+        color: white;
+        padding: 16px;
+        font-size: 16px;
+        font-weight: bold;
+        border: none;
+    }
+    .button {
+        border: none;
+        color: black;
+        padding: 15px 32px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 16px;
+        margin: 4px 2px;
+        cursor: pointer;
+    }
+    .dropdown {
+        position: relative;
+        display: inline-block;
+    }
+
+    .dropdown-content {
+        display: none;
+        position: absolute;
+        background-color: #f1f1f1;
+        min-width: 160px;
+        box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+        z-index: 1;
+    }
+
+    .dropdown:hover .dropdown-content {
+        display: block;
+    }
+
+    .dropdown:hover .dropbtn {
+        background-image: linear-gradient(#0b1f5b, #25042f);
+    }
+    .dropmenuScroll {
+        height: 300px;
+        max-height: 300px;
+        overflow-y: scroll;
+        position: absolute;
+    }
+</style>
+</head>
 <div class="p-4">
     <div class="container">
         @if (@AccountService.User != null)
@@ -32,9 +83,25 @@
         @if (movies != null)
         {
             <h2>Movies</h2>
+            <div>
+                <div>
+                    <input placeholder="Title" @bind-value="searchTerm" @bind-value:event="oninput" style="font-size: 18px ; margin-top: 20px; margin-bottom: 20px" />
+                    <span @onclick="async () => await SelectedPage(1)" class="oi oi-magnifying-glass" style="font-size: 22px"></span>
+                    <div class="dropdown">
+                        <button class="dropbtn">Choose genre</button>
+                        <div class="dropdown-content dropmenuScroll">
+                            <form>
+                                @foreach (var genre in genres)
+                                {
+                                    <button class="button" type="button" @onclick="async () => await SelectedPageGenre(1, genre.Id)"> @genre.Name </button>
+                                    
+                                }
 
-            <input placeholder="Title" @bind-value="searchTerm" @bind-value:event="oninput" style="font-size: 18px ; margin-top: 20px; margin-bottom: 20px" />
-            <span @onclick="async () => await SelectedPage(1)" class="oi oi-magnifying-glass" style="font-size: 22px"></span>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
             <table class="table">
                 <thead style="background-image: linear-gradient(180deg, rgb(5, 39, 103) 0%, #3a0647 70%); color:white">
@@ -85,26 +152,45 @@
     </ContentTemplate>
 </SpinLoader>
 
+
 @code {
     private List<Movie> movies = new List<Movie>();
+    private string selectedGenre { get; set; }
+
     private List<Rating> ratings = new List<Rating>();
+    private List<MovieGenre> genres = new List<MovieGenre>();
+
     private int totalPages;
     private int currentPage = 1;
     private string searchTerm = "";
+
+    private string genreName = "";
     bool isLoading = true;
 
     protected override async Task OnInitializedAsync()
     {
+        try
+        {
+            genres = await Http.Get<List<MovieGenre>>($"{APIConstants.MovieGenresEndpoint}");
+        }
+        catch (Exception ex)
+        {
+            StateHasChanged();
+        }
+
         await LoadMovies();
 
         isLoading = false;
         StateHasChanged();
 
+
         if (AppState.LoggedIn)
         {
             ratings = await Http.Get<List<Rating>>($"{APIConstants.RatingsForUserEndpoint}/{AccountService.User.Id}");
         }
+
     }
+
 
     private async Task LoadMovies(int page = 1, int entitiesPerPage = 10)
     {
@@ -129,6 +215,31 @@
         await LoadMovies(page);
     }
 
+    private async Task SelectedPageGenre(int page, int idGenre)
+    {
+        currentPage = page;
+        await LoadMoviesByGenre(idGenre);
+    }
+
+    private async Task LoadMoviesByGenre(int idGenre)
+    {
+        string endpoint = $"{APIConstants.MoviesEndpoint}?page={1}&entitiesPerPage={10}";
+        if (searchTerm != "")
+        {
+            endpoint = $"{endpoint}&title={searchTerm}";
+        }
+        endpoint = $"{endpoint}&idGenre={idGenre}";
+
+        var response = await HttpClient.GetAsync(endpoint);
+        if (response.IsSuccessStatusCode)
+        {
+            totalPages = int.Parse(response.Headers.GetValues(APIConstants.NumberOfPagesHeader).FirstOrDefault());
+            var responseString = await response.Content.ReadAsStringAsync();
+            movies = JsonSerializer.Deserialize<List<Movie>>(responseString,
+                new JsonSerializerOptions() { PropertyNameCaseInsensitive = true });
+        }
+    }
+
     private void RedirectToActors(int MovieId)
     {
         NavigationManager.NavigateTo($"{PagesConstants.ActorsFromMoviePage}/{MovieId}");
@@ -138,4 +249,5 @@
     {
         NavigationManager.NavigateTo($"{PagesConstants.AddRatingToMoviePage}/{MovieId}");
     }
+
 }
