@@ -5,57 +5,65 @@
 @inject AppState AppState
 @inject NavigationManager NavigationManager
 @using System.Text.Json
-@using System
 
 <head>
-<style>
-    .dropbtn {
-        background-image: linear-gradient(#0C2262, #380647);
-        color: white;
-        padding: 16px;
-        font-size: 16px;
-        font-weight: bold;
-        border: none;
-    }
-    .button {
-        border: none;
-        color: black;
-        padding: 15px 32px;
-        text-align: center;
-        text-decoration: none;
-        display: inline-block;
-        font-size: 16px;
-        margin: 4px 2px;
-        cursor: pointer;
-    }
-    .dropdown {
-        position: relative;
-        display: inline-block;
-    }
+    <style>
+        .dropbtn {
+            background-image: linear-gradient(#0C2262, #380647);
+            color: white;
+            padding: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            border: none;
+            margin-left: 30px;
+        }
 
-    .dropdown-content {
-        display: none;
-        position: absolute;
-        background-color: #f1f1f1;
-        min-width: 160px;
-        box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-        z-index: 1;
-    }
+        button {
+            border: none;
+            color: black;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
+        }
 
-    .dropdown:hover .dropdown-content {
-        display: block;
-    }
+        .active {
+            border: 1px solid black;
+        }
 
-    .dropdown:hover .dropbtn {
-        background-image: linear-gradient(#0b1f5b, #25042f);
-    }
-    .dropmenuScroll {
-        height: 300px;
-        max-height: 300px;
-        overflow-y: scroll;
-        position: absolute;
-    }
-</style>
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: #f1f1f1;
+            min-width: 160px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            z-index: 1;
+        }
+
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+
+        .dropdown:hover .dropbtn {
+            background-image: linear-gradient(#0b1f5b, #25042f);
+        }
+
+        .dropmenuScroll {
+            height: 300px;
+            max-height: 300px;
+            overflow-y: scroll;
+            position: absolute;
+        }
+
+    </style>
 </head>
 <div class="p-4">
     <div class="container">
@@ -91,12 +99,11 @@
                         <button class="dropbtn">Choose genre</button>
                         <div class="dropdown-content dropmenuScroll">
                             <form>
+                                <button type="button" @onclick="async () => await ClearGenre()">None</button>
                                 @foreach (var genre in genres)
                                 {
-                                    <button class="button" type="button" @onclick="async () => await SelectedPageGenre(1, genre.Id)"> @genre.Name </button>
-                                    
+                                    <button class="@(idGenre == genre.Id ? "active" : null)" type="button" @onclick="async () => await FilterByGenre(genre.Id)"> @genre.Name </button>
                                 }
-
                             </form>
                         </div>
                     </div>
@@ -155,58 +162,34 @@
 
 @code {
     private List<Movie> movies = new List<Movie>();
-    private string selectedGenre { get; set; }
-
     private List<Rating> ratings = new List<Rating>();
     private List<MovieGenre> genres = new List<MovieGenre>();
 
     private int totalPages;
     private int currentPage = 1;
     private string searchTerm = "";
-
-    private string genreName = "";
-    bool isLoading = true;
+    private bool isLoading = true;
+    private int idGenre = 0;
 
     protected override async Task OnInitializedAsync()
     {
-        try
-        {
-            genres = await Http.Get<List<MovieGenre>>($"{APIConstants.MovieGenresEndpoint}");
-        }
-        catch (Exception ex)
-        {
-            StateHasChanged();
-        }
+        genres = await Http.Get<List<MovieGenre>>($"{APIConstants.MovieGenresEndpoint}");
 
         await LoadMovies();
 
         isLoading = false;
         StateHasChanged();
 
-
         if (AppState.LoggedIn)
         {
             ratings = await Http.Get<List<Rating>>($"{APIConstants.RatingsForUserEndpoint}/{AccountService.User.Id}");
         }
-
     }
 
-
-    private async Task LoadMovies(int page = 1, int entitiesPerPage = 10)
+    private async Task FilterByGenre(int currentIdGenre)
     {
-        string endpoint = $"{APIConstants.MoviesEndpoint}?page={page}&entitiesPerPage={entitiesPerPage}";
-        if (searchTerm != "")
-        {
-            endpoint = $"{endpoint}&title={searchTerm}";
-        }
-        var response = await HttpClient.GetAsync(endpoint);
-        if (response.IsSuccessStatusCode)
-        {
-            totalPages = int.Parse(response.Headers.GetValues(APIConstants.NumberOfPagesHeader).FirstOrDefault());
-            var responseString = await response.Content.ReadAsStringAsync();
-            movies = JsonSerializer.Deserialize<List<Movie>>(responseString,
-                new JsonSerializerOptions() { PropertyNameCaseInsensitive = true });
-        }
+        idGenre = currentIdGenre;
+        await SelectedPage(1);
     }
 
     private async Task SelectedPage(int page)
@@ -215,20 +198,25 @@
         await LoadMovies(page);
     }
 
-    private async Task SelectedPageGenre(int page, int idGenre)
+    private async Task ClearGenre()
     {
-        currentPage = page;
-        await LoadMoviesByGenre(idGenre);
+        idGenre = 0;
+        await SelectedPage(1);
     }
 
-    private async Task LoadMoviesByGenre(int idGenre)
+    private async Task LoadMovies(int page = 1, int entitiesPerPage = 10)
     {
-        string endpoint = $"{APIConstants.MoviesEndpoint}?page={1}&entitiesPerPage={10}";
+        string endpoint = $"{APIConstants.MoviesEndpoint}?page={page}&entitiesPerPage={entitiesPerPage}";
+
         if (searchTerm != "")
         {
             endpoint = $"{endpoint}&title={searchTerm}";
         }
-        endpoint = $"{endpoint}&idGenre={idGenre}";
+
+        if (idGenre != 0)
+        {
+            endpoint = $"{endpoint}&idGenre={idGenre}";
+        }
 
         var response = await HttpClient.GetAsync(endpoint);
         if (response.IsSuccessStatusCode)
@@ -249,5 +237,4 @@
     {
         NavigationManager.NavigateTo($"{PagesConstants.AddRatingToMoviePage}/{MovieId}");
     }
-
 }
