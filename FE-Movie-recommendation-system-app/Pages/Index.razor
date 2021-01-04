@@ -113,8 +113,8 @@
             <table class="table">
                 <thead style="background-image: linear-gradient(180deg, rgb(5, 39, 103) 0%, #3a0647 70%); color:white">
                     <tr>
-                        <th>Title</th>
-                        <th>Release Year</th>
+                        <th @onclick="@( () => SortBy("Title"))">Title <span class="oi @(SetSortIcon("Title"))"></span></th>
+                        <th @onclick="@( () => SortBy("ReleaseYear"))">Release Year <span class="oi @(SetSortIcon("ReleaseYear"))"></span></th>
                         <th>Genres</th>
                         <th>Actors</th>
                         @if (AppState.LoggedIn)
@@ -170,6 +170,9 @@
     private string searchTerm = "";
     private bool isLoading = true;
     private int idGenre = 0;
+    private bool isSorted = false;
+    private string sortDirection = "";
+    private string sortByColumnName;
 
     protected override async Task OnInitializedAsync()
     {
@@ -204,6 +207,42 @@
         await SelectedPage(1);
     }
 
+    private async Task SortBy(string columnName)
+    {
+        sortByColumnName = columnName;
+
+        if (string.IsNullOrEmpty(sortDirection))
+        {
+            sortDirection = "asc";
+        }
+        else
+        {
+            sortDirection = (sortDirection == "asc" ? "desc" : "asc");
+        }
+        isSorted = true;
+        await LoadMovies(currentPage);
+    }
+
+    private string SetSortIcon(string columnName)
+    {
+        if (isSorted)
+        {
+            if (sortByColumnName != columnName)
+            {
+                return string.Empty;
+            }
+            if (sortDirection == "asc")
+            {
+                return "oi-caret-top";
+            }
+            else
+            {
+                return "oi-caret-bottom";
+            }
+        }
+        return string.Empty;
+    }
+
     private async Task LoadMovies(int page = 1, int entitiesPerPage = 10)
     {
         string endpoint = $"{APIConstants.MoviesEndpoint}?page={page}&entitiesPerPage={entitiesPerPage}";
@@ -216,6 +255,11 @@
         if (idGenre != 0)
         {
             endpoint = $"{endpoint}&idGenre={idGenre}";
+        }
+
+        if (isSorted)
+        {
+            endpoint = $"{endpoint}&sortByColumnName={sortByColumnName}&sortDirection={sortDirection}";
         }
 
         var response = await HttpClient.GetAsync(endpoint);
