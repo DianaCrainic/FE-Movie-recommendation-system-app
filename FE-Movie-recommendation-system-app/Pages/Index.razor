@@ -229,7 +229,7 @@
         {
             if (sortByColumnName != columnName)
             {
-                return string.Empty;
+                return "oi-elevator";
             }
             if (sortDirection == "asc")
             {
@@ -239,6 +239,10 @@
             {
                 return "oi-caret-bottom";
             }
+        }
+        else
+        {
+            return "oi-elevator";
         }
         return string.Empty;
     }
