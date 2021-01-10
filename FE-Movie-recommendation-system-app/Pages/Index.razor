@@ -62,7 +62,6 @@
             overflow-y: scroll;
             position: absolute;
         }
-
     </style>
 </head>
 <div class="p-4">
@@ -80,6 +79,7 @@
 </div>
 
 <link href="_content/BlazorPro.Spinkit/spinkit.min.css" rel="stylesheet" />
+
 <SpinLoader IsLoading="isLoading">
     <LoadingTemplate>
         <div class="col-12" style="height: 400px; vertical-align:middle">
@@ -240,11 +240,7 @@
                 return "oi-caret-bottom";
             }
         }
-        else
-        {
-            return "oi-elevator";
-        }
-        return string.Empty;
+        return "oi-elevator";
     }
 
     private async Task LoadMovies(int page = 1, int entitiesPerPage = 10)
