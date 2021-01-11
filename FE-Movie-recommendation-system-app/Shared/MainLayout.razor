@@ -1,11 +1,62 @@
 ﻿@inherits LayoutComponentBase
+@inject ILocalStorageService LocalStorageService
 
 <div class="sidebar">
     <NavMenu />
 </div>
 
-<div class="main">
+<div class="main @GetCssClass()">
     <div class="content px-4">
-        @Body
+
+        Dark Theme
+
+        <link href="_content/Syncfusion.Blazor/styles/bootstrap4.css" rel="stylesheet" />
+        <SfSwitch ValueChange="(Syncfusion.Blazor.Buttons.ChangeEventArgs<bool> e) => ChangingTheme(e)" @bind-Checked="isChecked"></SfSwitch>
+
+
+        <div class="content px-4">
+            @Body
+        </div>
     </div>
 </div>
+
+@code{
+    private string selectedTheme = ComponentsConstans.LightTheme;
+    private bool isChecked = false;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        var themeFromLocalStorage = await LocalStorageService.GetItem<string>(LocalStorageConstants.ThemeItem);
+        if(!string.IsNullOrEmpty(themeFromLocalStorage))
+        {
+            selectedTheme = themeFromLocalStorage;
+            if (selectedTheme == ComponentsConstans.DarkTheme)
+            {
+                isChecked = true;
+            }
+        }
+    }
+
+    private string GetCssClass()
+    {
+        if(selectedTheme == ComponentsConstans.LightTheme)
+        {
+            return String.Empty;
+        }
+        return ComponentsConstans.DarkModeClass;
+    }
+
+    private async void ChangingTheme(Syncfusion.Blazor.Buttons.ChangeEventArgs<bool> args)
+    {
+        if (selectedTheme == ComponentsConstans.LightTheme)
+        {
+            selectedTheme = ComponentsConstans.DarkTheme;
+        }
+        else
+        {
+            selectedTheme = ComponentsConstans.LightTheme;
+        }
+        await LocalStorageService.SetItem(LocalStorageConstants.ThemeItem, selectedTheme);
+    }
+}

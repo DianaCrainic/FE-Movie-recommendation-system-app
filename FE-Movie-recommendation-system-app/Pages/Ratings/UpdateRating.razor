@@ -14,12 +14,12 @@ else
     <button action="action"
             onclick="window.history.go(-1); return false;"
             type="submit" class="oi oi-arrow-thick-left"
-            style="background-color: white; width: 60px; height: 30px; border: none; margin-bottom: 20px">
+            style="background-color:var(--background); color: var(--font-color) ;width:60px; height: 30px; border: none; margin-bottom: 20px">
     </button>
 
     <div class="card">
-        <h4 class="card-header">Change rating</h4>
-        <div class="card-body">
+        <h4 class="card-header" style="background-color: var(--highlight)">Change rating</h4>
+        <div class="card-body" style="background-color: var(--highlight)">
             <EditForm Model="@UpdateRatingRequest" OnValidSubmit="OnValidSubmit">
                 <DataAnnotationsValidator />
                 <div class="form-group">
