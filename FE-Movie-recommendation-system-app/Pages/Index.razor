@@ -5,7 +5,104 @@
 @inject AppState AppState
 @inject NavigationManager NavigationManager
 @using System.Text.Json
+<<<<<<< HEAD
 
+=======
+@using FE_Movie_recommendation_system_app.Shared;
+<head>
+    <style>
+        .dropbtn {
+            background-image: linear-gradient(#0C2262, #380647);
+            color: white;
+            padding: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            border: none;
+            margin-left: 30px;
+        }
+
+        button {
+            border: none;
+            color: black;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
+        }
+
+        .active {
+            border: 1px solid black;
+        }
+
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: #f1f1f1;
+            min-width: 160px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            z-index: 1;
+        }
+
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+
+        .dropdown:hover .dropbtn {
+            background-image: linear-gradient(#0b1f5b, #25042f);
+        }
+
+        .dropmenuScroll {
+            height: 300px;
+            max-height: 300px;
+            overflow-y: scroll;
+            position: absolute;
+        }
+
+        #popup_view {
+            visibility: @PopupViewStatus;
+            background-color: white;
+            position: fixed;
+            z-index: 10;
+            width: 50%;
+            left: 25%;
+            height: 90%;
+            top: 5%;
+            display: flex;
+            flex-direction: column;
+            overflow-y: scroll;
+            opacity: 1;
+            box-shadow: 0px 0px 50px 1px #000;
+        }
+        #close_button {
+            top: 10px;
+            right: 20px;
+            transition: all 200ms;
+            font-size: 30px;
+            font-weight: bold;
+            text-decoration: none;
+            color: #333;
+            float: right;
+            position: sticky;
+        }
+
+        .movie_image {
+            width: 280px;
+            height: 420px;
+            padding-top:10px;
+            float: left;
+        }
+
+    </style>
+</head>
+>>>>>>> 3ca14bb (API update)
 <div class="p-4">
     <div class="container">
         @if (@AccountService.User != null)
@@ -32,6 +129,27 @@
     <ContentTemplate>
         @if (movies != null)
         {
+            <div id="popup_view">
+                <div>
+                    <span id="close_button" @onclick="() => ClosePopup()">&times;</span>
+                    <h1 id="Title" style="padding-left:10px; padding-top:10px">@MovieTitle</h1>
+                    <hr>
+                    <div style="padding-left:10px">
+                        <img class="movie_image" src="@PictureAddress">
+                        <p style="padding:10px; padding-left:300px">@MovieDescritpion</p>
+                    </div>
+                    <div style="clear: both; display: block">
+                        <br />
+                        <hr>
+                        <h3 style=" padding-left: 10px; padding-right: 10px">Cast</h3>
+                        <ul>
+                            @ActorsList
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+
             <h2>Movies</h2>
             <div>
                 <div>
@@ -73,7 +191,11 @@
                     @foreach (var movie in movies)
                     {
                         <tr>
+<<<<<<< HEAD
                             <td class="classhover">@movie.Title</td>
+=======
+                            <td @onclick="async () => GetMovieData(movie.Id)">@movie.Title</td>
+>>>>>>> 3ca14bb (API update)
                             <td style="padding-left:30px;">@movie.ReleaseYear</td>
 
                             <td>
@@ -235,5 +357,23 @@
     private void RedirectToAddRating(int MovieId)
     {
         NavigationManager.NavigateTo($"{PagesConstants.AddRatingToMoviePage}/{MovieId}");
+    }
+
+    public void ClosePopup()
+    {
+        PopupViewStatus = "hidden";
+    }
+    [Parameter] public static string MovieDescritpion { get; set; }
+    [Parameter] public static string PictureAddress { get; set; }
+    [Parameter] public static string PopupViewStatus { get; set; } = "hidden";
+    [Parameter] public static List<string> ActorsList { set; get; }
+    [Parameter] public static string MovieTitle { set; get; }
+    public async void GetMovieData(int movieId)
+    {
+        ImdbAPI.GetMovieDetails(movieId);
+        MovieDescritpion = ImdbAPI.MovieDescritpion;
+        MovieTitle = ImdbAPI.MovieTitle;
+        PictureAddress = ImdbAPI.PictureAddress;
+        PopupViewStatus = "visible";
     }
 }

@@ -127,17 +127,14 @@ using System.Threading.Tasks;
    
     public class ImdbAPI
     {
-        [Parameter] public static string MovieDescritpion { get; set; }
-        [Parameter] public static string PictureAddress { get; set; }
-        [Parameter] public static string PopupViewStatus { get; set; } = "hidden";
-        [Parameter] public static List<string> ActorsList { set; get; }
-        [Parameter] public static string MovieTitle { set; get; }
-        public static void ClosePopup()
-        {
-            ImdbAPI.PopupViewStatus = "hidden";
-        }
+        public static string MovieDescritpion { get; set; }
+        public static string PictureAddress { get; set; }
+        public static string PopupViewStatus { get; set; } = "hidden";
+        public static List<string> ActorsList { set; get; }
+        public static string MovieTitle { set; get; }
+      
 
-        public static async void ImdAPI(int movieId)
+        public static async void GetMovieDetails(int movieId)
         {
 
 
