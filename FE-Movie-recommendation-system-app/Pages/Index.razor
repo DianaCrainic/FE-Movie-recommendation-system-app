@@ -6,64 +6,6 @@
 @inject NavigationManager NavigationManager
 @using System.Text.Json
 
-<head>
-    <style>
-        .dropbtn {
-            background-image: linear-gradient(#0C2262, #380647);
-            color: white;
-            padding: 10px;
-            font-size: 16px;
-            font-weight: bold;
-            border: none;
-            margin-left: 30px;
-        }
-
-        button {
-            border: none;
-            color: black;
-            padding: 10px 20px;
-            text-align: center;
-            text-decoration: none;
-            display: inline-block;
-            font-size: 16px;
-            margin: 4px 2px;
-            cursor: pointer;
-        }
-
-        .active {
-            border: 1px solid black;
-        }
-
-        .dropdown {
-            position: relative;
-            display: inline-block;
-        }
-
-        .dropdown-content {
-            display: none;
-            position: absolute;
-            background-color: #f1f1f1;
-            min-width: 160px;
-            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-            z-index: 1;
-        }
-
-        .dropdown:hover .dropdown-content {
-            display: block;
-        }
-
-        .dropdown:hover .dropbtn {
-            background-image: linear-gradient(#0b1f5b, #25042f);
-        }
-
-        .dropmenuScroll {
-            height: 300px;
-            max-height: 300px;
-            overflow-y: scroll;
-            position: absolute;
-        }
-    </style>
-</head>
 <div class="p-4">
     <div class="container">
         @if (@AccountService.User != null)
@@ -75,9 +17,9 @@
             <h1>Hi!</h1>
         }
         <p>Welcome to Movie Recommendation System!!</p>
+        <hr />
     </div>
 </div>
-
 <link href="_content/BlazorPro.Spinkit/spinkit.min.css" rel="stylesheet" />
 
 <SpinLoader IsLoading="isLoading">
@@ -93,19 +35,23 @@
             <h2>Movies</h2>
             <div>
                 <div>
-                    <input placeholder="Title" @bind-value="searchTerm" @bind-value:event="oninput" style="font-size: 18px ; margin-top: 20px; margin-bottom: 20px" />
-                    <span @onclick="async () => await SelectedPage(1)" class="oi oi-magnifying-glass" style="font-size: 22px"></span>
-                    <div class="dropdown">
-                        <button class="dropbtn">Choose genre</button>
-                        <div class="dropdown-content dropmenuScroll">
-                            <form>
-                                <button type="button" @onclick="async () => await ClearGenre()">None</button>
-                                @foreach (var genre in genres)
-                                {
-                                    <button class="@(idGenre == genre.Id ? "active" : null)" type="button" @onclick="async () => await FilterByGenre(genre.Id)"> @genre.Name </button>
-                                }
-                            </form>
+                    <div>
+                        <input placeholder="Title" @bind-value="searchTerm" @bind-value:event="oninput" style="font-size: 18px ; margin-top: 20px; margin-bottom: 20px" />
+                        <span @onclick="async () => await SelectedPage(1)" class="oi oi-magnifying-glass classhover" style="font-size: 22px"></span>
+
+                        <div class="dropdown">
+                            <button class="dropbtn">Choose genre</button>
+                            <div class="dropdown-content dropmenuScroll">
+                                <form>
+                                    <button type="button" @onclick="async () => await ClearGenre()">None</button>
+                                    @foreach (var genre in genres)
+                                    {
+                                        <button class="@(idGenre == genre.Id ? "active" : null)" type="button" @onclick="async () => await FilterByGenre(genre.Id)"> @genre.Name </button>
+                                    }
+                                </form>
+                            </div>
                         </div>
+                        <button class="btnnofilter" @onclick="async () => await ClearFilters()">No filters</button>
                     </div>
                 </div>
             </div>
@@ -113,8 +59,8 @@
             <table class="table">
                 <thead style="background-image: linear-gradient(180deg, rgb(5, 39, 103) 0%, #3a0647 70%); color:white">
                     <tr>
-                        <th @onclick="@( () => SortBy("Title"))">Title <span class="oi @(SetSortIcon("Title"))"></span></th>
-                        <th @onclick="@( () => SortBy("ReleaseYear"))">Release Year <span class="oi @(SetSortIcon("ReleaseYear"))"></span></th>
+                        <th @onclick="@( () => SortBy("Title"))">Title <span class="oi @(SetSortIcon("Title")) classhover"></span></th>
+                        <th @onclick="@( () => SortBy("ReleaseYear"))">Release Year <span class="oi @(SetSortIcon("ReleaseYear")) classhover"></span></th>
                         <th>Genres</th>
                         <th>Actors</th>
                         @if (AppState.LoggedIn)
@@ -127,7 +73,7 @@
                     @foreach (var movie in movies)
                     {
                         <tr>
-                            <td>@movie.Title</td>
+                            <td class="classhover">@movie.Title</td>
                             <td style="padding-left:30px;">@movie.ReleaseYear</td>
 
                             <td>
@@ -137,7 +83,7 @@
                                 }
                             </td>
 
-                            <td style="padding-left:30px;"><span class="oi oi-people" @onclick="() => RedirectToActors(movie.Id)"></span></td>
+                            <td style="padding-left:30px;"><span class="oi oi-people classhover" @onclick="() => RedirectToActors(movie.Id)"></span></td>
 
                             @if (AppState.LoggedIn)
                             {
@@ -147,7 +93,7 @@
                                 }
                                 else
                                 {
-                                    <td><span class="oi oi-plus" @onclick="() => RedirectToAddRating(movie.Id)"></span></td>
+                                    <td><span class="oi oi-plus classhover" @onclick="() => RedirectToAddRating(movie.Id)"></span></td>
                                 }
                             }
                         </tr>
@@ -204,6 +150,15 @@
     private async Task ClearGenre()
     {
         idGenre = 0;
+        await SelectedPage(1);
+    }
+
+    private async Task ClearFilters()
+    {
+        idGenre = 0;
+        searchTerm = "";
+        isSorted = false;
+        sortDirection = "";
         await SelectedPage(1);
     }
 
