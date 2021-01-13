@@ -143,7 +143,13 @@
                         <hr>
                         <h3 style=" padding-left: 10px; padding-right: 10px">Cast</h3>
                         <ul>
-                            @ActorsList
+                            @if (ActorsList != null)
+                            {
+                                foreach(string actor in ActorsList)
+                                {
+                                    <li>actor</li>
+                                }
+                            }
                         </ul>
                     </div>
                 </div>
@@ -368,6 +374,7 @@
     [Parameter] public static string PopupViewStatus { get; set; } = "hidden";
     [Parameter] public static List<string> ActorsList { set; get; }
     [Parameter] public static string MovieTitle { set; get; }
+
     public async void GetMovieData(int movieId)
     {
         ImdbAPI.GetMovieDetails(movieId);
