@@ -4,8 +4,8 @@
 @inject HttpClient HttpClient
 @inject AppState AppState
 @inject NavigationManager NavigationManager
-@using System.Text.Json
-
+@using System.Text.Json;
+@using System.Text.Json.Serialization;
 <head>
     <style>
         .dropbtn {
@@ -87,7 +87,7 @@
             text-decoration: none;
             color: black;
             float: right;
-            position: absolute; 
+            position: absolute;
         }
 
         .movie_image {
@@ -382,7 +382,7 @@
         var request = new HttpRequestMessage
         {
             Method = HttpMethod.Get,
-            RequestUri = new Uri($"https://api.themoviedb.org/3/movie/{movieId}?api_key=bbaf97a3069fad0118f94c81a1d7cc9e")
+            RequestUri = new Uri($"{APIConstants.ImdbApiRequestBaseAddress}/{movieId}?api_key={APIConstants.ImdbApiRapidKey}")
         };
 
         Root details;
@@ -391,9 +391,9 @@
             response.EnsureSuccessStatusCode();
             var body = await response.Content.ReadAsStringAsync();
             details = JsonSerializer.Deserialize<Root>(body, new JsonSerializerOptions() { PropertyNameCaseInsensitive = true });
-            MovieDescription = details.overview;
-            MovieTitle = details.title;
-            PictureAddress = "https://image.tmdb.org/t/p/original" + details.poster_path;
+            MovieDescription = details.Overview;
+            MovieTitle = details.Title;
+            PictureAddress = $"{APIConstants.ImdbApiPictureBaseAddreess}/{details.Poster_Path}";
         }
         PopupViewStatus = "visible";
         StateHasChanged();
