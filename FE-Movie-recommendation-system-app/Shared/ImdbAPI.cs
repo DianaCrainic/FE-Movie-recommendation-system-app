@@ -129,20 +129,16 @@ using System.Threading.Tasks;
     {
         public  string MovieDescritpion { get; set; }
         public  string PictureAddress { get; set; }
-       public  string MovieTitle { set; get; }
-        
+        public  string MovieTitle { set; get; }
+        public string MessageContent { set; get; } 
         public ImdbAPI()
         {
 
         }
 
 
-        public  async void GetMovieDetails(int movieId)
+        public async void GetMovieDetails(int movieId)
         {
-
-            MovieDescritpion = null;
-            PictureAddress = null;
-            MovieTitle = null;     
 
             var client = new HttpClient();
             var request = new HttpRequestMessage
@@ -151,21 +147,23 @@ using System.Threading.Tasks;
                 RequestUri = new Uri($"https://imdb8.p.rapidapi.com/title/get-overview-details?tconst=tt0{movieId}&currentCountry=US"),
                 Headers =
                     {
-                    { "x-rapidapi-key","9d77eea953msh05a8a5f0a2e1c53p1f3925jsn508123787afb" }, /**/ 
+                    { "x-rapidapi-key","b3ba47dd7amshf8f0f527cfbd1f8p16fa06jsnf385995af860" }, /**/ 
                     { "x-rapidapi-host", "imdb8.p.rapidapi.com" },
                 },
             };
             
             using (var response = await client.SendAsync(request))
             {
-                response.EnsureSuccessStatusCode();
+                try
+                {
+                    response.EnsureSuccessStatusCode();
+
+                }catch(Exception e)
+                {   
+                    return;
+                }
                 var body = await response.Content.ReadAsStringAsync();
                 DetailsRoot details = JsonSerializer.Deserialize<DetailsRoot>(body, new JsonSerializerOptions() { PropertyNameCaseInsensitive = true });
-
-                if (details.plotSummary == null)
-                {
-                     return;
-                }
                 MovieDescritpion = details.plotSummary.text;
                 MovieTitle = details.title.title;
                 PictureAddress = details.title.image.url;

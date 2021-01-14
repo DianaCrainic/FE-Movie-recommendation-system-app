@@ -130,37 +130,40 @@
         @if (movies != null)
         {
             <div id="popup_view">
-                <div>
-                    <span id="close_button" @onclick="() => ClosePopup()">&times;</span>
-                    @if(@PictureAddress != null)
-                    {
-                        <h1 id="Title" style="padding-left:10px; padding-top:10px">@MovieTitle</h1>
-                        <hr>
-                        <div style="padding-left:10px">
-                            <img class="movie_image" src="@PictureAddress">
-                            <p style="padding:10px; padding-left:300px">@MovieDescritpion</p>
-                        </div>
-                        <div style="clear: both; display: block">
-                            <br />
-                            <hr>
-                            <h3 style=" padding-left: 10px; padding-right: 10px">Cast</h3>
-                            <ul>
-                                @if (@ActorsList != null)
-                                {
-                                    @foreach (Actor actor in @ActorsList)
-                                    {
-                                        <li>@actor.Name</li>
-                                    }
-                                }
-                            </ul>
-                        </div>
-                    }
-                    else
-                    {
-                        <h1 id="Title" style="padding-left:10px; padding-top:10px">No information found</h1>
-                    }
+                @if (@PictureAddress != null)
+                {
 
-                </div>
+                    <div>
+                        <span id="close_button" @onclick="() => ClosePopup()">&times;</span>
+                   
+                            <h1 id="Title" style="padding-left:10px; padding-top:10px">@MovieTitle</h1>
+                            <hr>
+                            <div style="padding-left:10px">
+                                <img class="movie_image" src="@PictureAddress">
+                                <p style="padding:10px; padding-left:300px">@MovieDescritpion</p>
+                            </div>
+                            <div style="clear: both; display: block">
+                                <br />
+                                <hr>
+                                <h3 style=" padding-left: 10px; padding-right: 10px">Cast</h3>
+                                <ul>
+                                    @if (@ActorsList != null)
+                                    {
+                                        @foreach (Actor actor in @ActorsList)
+                                        {
+                                            <li>@actor.Name</li>
+                                        }
+                                    }
+                                </ul>
+                            </div>
+                    
+
+                    </div>
+                }
+                else
+                {
+                    <h1>No Information Found</h1>
+                }
             </div>
 
 
@@ -382,22 +385,15 @@
     [Parameter] public string PopupViewStatus { get; set; } = "hidden";
     [Parameter] public List<Actor> ActorsList { set; get; }
     [Parameter] public string MovieTitle { set; get; }
-    private Movie movie { get; set; }
     public async void GetMovieData(int movieId)
     {
         MovieDescritpion = null;
         PictureAddress = null;
         MovieTitle = null;
+        Movie movie= await Http.Get<Movie>($"{APIConstants.MoviesEndpoint}/{movieId}");
+        ActorsList = await Http.Get<List<Actor>>($"{APIConstants.ActorsFromMovieEndpoint}/{movieId}");
         ImdbAPI api = new ImdbAPI();
         api.GetMovieDetails(movieId);
-        if (api.PictureAddress == null)
-        {
-            PopupViewStatus = "visible";
-            return;
-        }
-
-        movie = await Http.Get<Movie>($"{APIConstants.MoviesEndpoint}/{movieId}");
-        ActorsList = await Http.Get<List<Actor>>($"{APIConstants.ActorsFromMovieEndpoint}/{movieId}");
         MovieDescritpion = api.MovieDescritpion;
         MovieTitle = api.MovieTitle;
         PictureAddress = api.PictureAddress;
