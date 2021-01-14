@@ -9,6 +9,7 @@
 
 =======
 @using FE_Movie_recommendation_system_app.Shared;
+
 <head>
     <style>
         .dropbtn {
@@ -133,13 +134,12 @@
 
                 <div>
                     <span id="close_button" @onclick="() => ClosePopup()">&times;</span>
-                    @if (@PictureAddress != null)
-                    {
+                   
                         <h1 id="Title" style="padding-left:10px; padding-top:10px">@MovieTitle</h1>
                         <hr>
                         <div style="padding-left:10px">
                             <img class="movie_image" src="@PictureAddress">
-                            <p style="padding:10px; padding-left:300px">@MovieDescritpion</p>
+                            <p style="padding:10px; padding-left:300px">@MovieDescription</p>
                         </div>
                         <div style="clear: both; display: block">
                             <br />
@@ -156,11 +156,8 @@
                             </ul>
                         </div>
 
-                    }
-                    else
-                    {
-                        <h1>No Information Found</h1>
-                    }
+                    
+                    
                 </div>
                 
             </div>
@@ -379,23 +376,34 @@
     {
         PopupViewStatus = "hidden";
     }
-    [Parameter] public string MovieDescritpion { get; set; }
+    [Parameter] public string MovieDescription { get; set; }
     [Parameter] public string PictureAddress { get; set; }
     [Parameter] public string PopupViewStatus { get; set; } = "hidden";
     [Parameter] public List<Actor> ActorsList { set; get; }
     [Parameter] public string MovieTitle { set; get; }
     public async void GetMovieData(int movieId)
     {
-        MovieDescritpion = null;
-        PictureAddress = null;
-        MovieTitle = null;
+
         Movie movie= await Http.Get<Movie>($"{APIConstants.MoviesEndpoint}/{movieId}");
         ActorsList = await Http.Get<List<Actor>>($"{APIConstants.ActorsFromMovieEndpoint}/{movieId}");
-        ImdbAPI api = new ImdbAPI();
-        api.GetMovieDetails(movieId);
-        MovieDescritpion = api.MovieDescritpion;
-        MovieTitle = api.MovieTitle;
-        PictureAddress = api.PictureAddress;
+
+
+        var client = new HttpClient();
+        var request = new HttpRequestMessage
+        {
+            Method = HttpMethod.Get,
+            RequestUri = new Uri($"https://api.themoviedb.org/3/movie/{movieId}?api_key=bbaf97a3069fad0118f94c81a1d7cc9e")
+        };
+        Root details;
+        using (var response = await client.SendAsync(request))
+        {
+            response.EnsureSuccessStatusCode();
+            var body = await response.Content.ReadAsStringAsync();
+            details = JsonSerializer.Deserialize<Root>(body, new JsonSerializerOptions() { PropertyNameCaseInsensitive = true });
+            MovieDescription = details.overview;
+            MovieTitle = details.title;
+            PictureAddress = "https://image.tmdb.org/t/p/original" + details.poster_path;
+        }
         PopupViewStatus = "visible";
     }
 }
