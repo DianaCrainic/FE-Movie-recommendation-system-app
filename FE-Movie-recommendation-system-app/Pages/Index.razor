@@ -5,10 +5,6 @@
 @inject AppState AppState
 @inject NavigationManager NavigationManager
 @using System.Text.Json
-<<<<<<< HEAD
-
-=======
-@using FE_Movie_recommendation_system_app.Shared;
 
 <head>
     <style>
@@ -69,19 +65,19 @@
 
         #popup_view {
             visibility: @PopupViewStatus;
-            background-color: white;
+            background-color: var(--highlight);
             position: fixed;
             z-index: 10;
             width: 50%;
             left: 25%;
-            height: 90%;
+            height: 70%;
             top: 5%;
             display: flex;
             flex-direction: column;
-            overflow-y: scroll;
             opacity: 1;
             box-shadow: 0px 0px 50px 1px #000;
         }
+
         #close_button {
             top: 10px;
             right: 20px;
@@ -89,9 +85,9 @@
             font-size: 30px;
             font-weight: bold;
             text-decoration: none;
-            color: #333;
+            color: black;
             float: right;
-            position: sticky;
+            position: absolute; 
         }
 
         .movie_image {
@@ -101,9 +97,16 @@
             float: left;
         }
 
+        .cast {
+            padding-left: 270px;
+        }
+
+        .cast ul {
+            list-style-type: none;
+        }
     </style>
 </head>
->>>>>>> 3ca14bb (API update)
+
 <div class="p-4">
     <div class="container">
         @if (@AccountService.User != null)
@@ -131,20 +134,15 @@
         @if (movies != null)
         {
             <div id="popup_view">
-
                 <div>
-                    <span id="close_button" @onclick="() => ClosePopup()">&times;</span>
-                   
-                        <h1 id="Title" style="padding-left:10px; padding-top:10px">@MovieTitle</h1>
-                        <hr>
-                        <div style="padding-left:10px">
-                            <img class="movie_image" src="@PictureAddress">
-                            <p style="padding:10px; padding-left:300px">@MovieDescription</p>
-                        </div>
-                        <div style="clear: both; display: block">
-                            <br />
-                            <hr>
-                            <h3 style=" padding-left: 10px; padding-right: 10px">Cast</h3>
+                    <span class="classhover" id="close_button" @onclick="() => ClosePopup()">&times;</span>
+                    <h1 id="Title" style="padding-left:10px; padding-top:10px">@MovieTitle</h1>
+                    <hr>
+                    <div style="padding-left:10px">
+                        <img class="movie_image" src="@PictureAddress">
+                        <p style="padding:10px; padding-left:300px">@MovieDescription</p>
+                        <div class="cast">
+                            <h3 style="padding-left: 20px; padding-right: 10px">Cast</h3>
                             <ul>
                                 @if (@ActorsList != null)
                                 {
@@ -155,11 +153,8 @@
                                 }
                             </ul>
                         </div>
-
-                    
-                    
+                    </div>
                 </div>
-                
             </div>
 
 
@@ -204,13 +199,8 @@
                     @foreach (var movie in movies)
                     {
                         <tr>
-<<<<<<< HEAD
-                            <td class="classhover">@movie.Title</td>
-=======
-                            <td @onclick="async () => GetMovieData(movie.Id)">@movie.Title</td>
->>>>>>> 3ca14bb (API update)
+                            <td class="classhover" @onclick="async () => GetMovieData(movie.Id)">@movie.Title</td>
                             <td style="padding-left:30px;">@movie.ReleaseYear</td>
-
                             <td>
                                 @foreach (var genre in movie.Genres)
                                 {
@@ -376,17 +366,17 @@
     {
         PopupViewStatus = "hidden";
     }
+
     [Parameter] public string MovieDescription { get; set; }
     [Parameter] public string PictureAddress { get; set; }
     [Parameter] public string PopupViewStatus { get; set; } = "hidden";
     [Parameter] public List<Actor> ActorsList { set; get; }
     [Parameter] public string MovieTitle { set; get; }
+
     public async void GetMovieData(int movieId)
     {
-
-        Movie movie= await Http.Get<Movie>($"{APIConstants.MoviesEndpoint}/{movieId}");
+        Movie movie = await Http.Get<Movie>($"{APIConstants.MoviesEndpoint}/{movieId}");
         ActorsList = await Http.Get<List<Actor>>($"{APIConstants.ActorsFromMovieEndpoint}/{movieId}");
-
 
         var client = new HttpClient();
         var request = new HttpRequestMessage
@@ -394,6 +384,7 @@
             Method = HttpMethod.Get,
             RequestUri = new Uri($"https://api.themoviedb.org/3/movie/{movieId}?api_key=bbaf97a3069fad0118f94c81a1d7cc9e")
         };
+
         Root details;
         using (var response = await client.SendAsync(request))
         {
@@ -405,5 +396,6 @@
             PictureAddress = "https://image.tmdb.org/t/p/original" + details.poster_path;
         }
         PopupViewStatus = "visible";
+        StateHasChanged();
     }
 }

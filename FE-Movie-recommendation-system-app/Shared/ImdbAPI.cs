@@ -65,6 +65,7 @@ public class ImdbAPI
     public string PictureAddress { get; set; }
     public string MovieTitle { set; get; }
     public string MessageContent { set; get; }
+    
     public ImdbAPI()
     {
 
