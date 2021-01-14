@@ -127,16 +127,22 @@ using System.Threading.Tasks;
    
     public class ImdbAPI
     {
-        public static string MovieDescritpion { get; set; }
-        public static string PictureAddress { get; set; }
-        public static string PopupViewStatus { get; set; } = "hidden";
-        public static List<string> ActorsList { set; get; }
-        public static string MovieTitle { set; get; }
-      
-
-        public static async void GetMovieDetails(int movieId)
+        public  string MovieDescritpion { get; set; }
+        public  string PictureAddress { get; set; }
+       public  string MovieTitle { set; get; }
+        
+        public ImdbAPI()
         {
 
+        }
+
+
+        public  async void GetMovieDetails(int movieId)
+        {
+
+            MovieDescritpion = null;
+            PictureAddress = null;
+            MovieTitle = null;     
 
             var client = new HttpClient();
             var request = new HttpRequestMessage
@@ -145,43 +151,25 @@ using System.Threading.Tasks;
                 RequestUri = new Uri($"https://imdb8.p.rapidapi.com/title/get-overview-details?tconst=tt0{movieId}&currentCountry=US"),
                 Headers =
                     {
-                    { "x-rapidapi-key", "9d77eea953msh05a8a5f0a2e1c53p1f3925jsn508123787afb" },
+                    { "x-rapidapi-key","9d77eea953msh05a8a5f0a2e1c53p1f3925jsn508123787afb" }, /**/ 
                     { "x-rapidapi-host", "imdb8.p.rapidapi.com" },
                 },
             };
-
+            
             using (var response = await client.SendAsync(request))
             {
                 response.EnsureSuccessStatusCode();
                 var body = await response.Content.ReadAsStringAsync();
                 DetailsRoot details = JsonSerializer.Deserialize<DetailsRoot>(body, new JsonSerializerOptions() { PropertyNameCaseInsensitive = true });
-                ImdbAPI.MovieDescritpion = details.plotSummary.text;
-                ImdbAPI.MovieTitle = details.title.title;
-                ImdbAPI.PictureAddress = details.title.image.url;
-            }
 
-            request = new HttpRequestMessage
-            {
-                Method = HttpMethod.Get,
-                RequestUri = new Uri($"https://imdb8.p.rapidapi.com/title/get-top-crew?tconst=tt0{movieId}"),
-                Headers =
-                        {
-                        { "x-rapidapi-key", "942d4e4b14msh9ddb23ceaeab081p1e5bacjsne3776094ce32" },
-                        { "x-rapidapi-host", "imdb8.p.rapidapi.com" },
-                    },
-            };
-            using (var response = await client.SendAsync(request))
-            {
-                response.EnsureSuccessStatusCode();
-                var body = await response.Content.ReadAsStringAsync();
-                ImdbAPI.ActorsList = new List<string>();
-                ActorsRoot actors = JsonSerializer.Deserialize<ActorsRoot>(body, new JsonSerializerOptions() { PropertyNameCaseInsensitive = true });
-                foreach (Director director in actors.directors)
+                if (details.plotSummary == null)
                 {
-                    ImdbAPI.ActorsList.Add(director.name);
+                     return;
                 }
+                MovieDescritpion = details.plotSummary.text;
+                MovieTitle = details.title.title;
+                PictureAddress = details.title.image.url;
             }
-            ImdbAPI.PopupViewStatus = "visible";
         }
     }   
 

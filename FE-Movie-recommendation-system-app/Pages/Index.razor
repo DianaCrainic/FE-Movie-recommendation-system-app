@@ -132,26 +132,34 @@
             <div id="popup_view">
                 <div>
                     <span id="close_button" @onclick="() => ClosePopup()">&times;</span>
-                    <h1 id="Title" style="padding-left:10px; padding-top:10px">@MovieTitle</h1>
-                    <hr>
-                    <div style="padding-left:10px">
-                        <img class="movie_image" src="@PictureAddress">
-                        <p style="padding:10px; padding-left:300px">@MovieDescritpion</p>
-                    </div>
-                    <div style="clear: both; display: block">
-                        <br />
+                    @if(@PictureAddress != null)
+                    {
+                        <h1 id="Title" style="padding-left:10px; padding-top:10px">@MovieTitle</h1>
                         <hr>
-                        <h3 style=" padding-left: 10px; padding-right: 10px">Cast</h3>
-                        <ul>
-                            @if (ActorsList != null)
-                            {
-                                foreach(string actor in ActorsList)
+                        <div style="padding-left:10px">
+                            <img class="movie_image" src="@PictureAddress">
+                            <p style="padding:10px; padding-left:300px">@MovieDescritpion</p>
+                        </div>
+                        <div style="clear: both; display: block">
+                            <br />
+                            <hr>
+                            <h3 style=" padding-left: 10px; padding-right: 10px">Cast</h3>
+                            <ul>
+                                @if (@ActorsList != null)
                                 {
-                                    <li>actor</li>
+                                    @foreach (Actor actor in @ActorsList)
+                                    {
+                                        <li>@actor.Name</li>
+                                    }
                                 }
-                            }
-                        </ul>
-                    </div>
+                            </ul>
+                        </div>
+                    }
+                    else
+                    {
+                        <h1 id="Title" style="padding-left:10px; padding-top:10px">No information found</h1>
+                    }
+
                 </div>
             </div>
 
@@ -369,18 +377,30 @@
     {
         PopupViewStatus = "hidden";
     }
-    [Parameter] public static string MovieDescritpion { get; set; }
-    [Parameter] public static string PictureAddress { get; set; }
-    [Parameter] public static string PopupViewStatus { get; set; } = "hidden";
-    [Parameter] public static List<string> ActorsList { set; get; }
-    [Parameter] public static string MovieTitle { set; get; }
-
+    [Parameter] public string MovieDescritpion { get; set; }
+    [Parameter] public string PictureAddress { get; set; }
+    [Parameter] public string PopupViewStatus { get; set; } = "hidden";
+    [Parameter] public List<Actor> ActorsList { set; get; }
+    [Parameter] public string MovieTitle { set; get; }
+    private Movie movie { get; set; }
     public async void GetMovieData(int movieId)
     {
-        ImdbAPI.GetMovieDetails(movieId);
-        MovieDescritpion = ImdbAPI.MovieDescritpion;
-        MovieTitle = ImdbAPI.MovieTitle;
-        PictureAddress = ImdbAPI.PictureAddress;
+        MovieDescritpion = null;
+        PictureAddress = null;
+        MovieTitle = null;
+        ImdbAPI api = new ImdbAPI();
+        api.GetMovieDetails(movieId);
+        if (api.PictureAddress == null)
+        {
+            PopupViewStatus = "visible";
+            return;
+        }
+
+        movie = await Http.Get<Movie>($"{APIConstants.MoviesEndpoint}/{movieId}");
+        ActorsList = await Http.Get<List<Actor>>($"{APIConstants.ActorsFromMovieEndpoint}/{movieId}");
+        MovieDescritpion = api.MovieDescritpion;
+        MovieTitle = api.MovieTitle;
+        PictureAddress = api.PictureAddress;
         PopupViewStatus = "visible";
     }
 }
