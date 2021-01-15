@@ -4,7 +4,108 @@
 @inject HttpClient HttpClient
 @inject AppState AppState
 @inject NavigationManager NavigationManager
-@using System.Text.Json
+@using System.Text.Json;
+
+<head>
+    <style>
+        .dropbtn {
+            background-image: linear-gradient(#0C2262, #380647);
+            color: white;
+            padding: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            border: none;
+            margin-left: 30px;
+        }
+
+        button {
+            border: none;
+            color: black;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
+        }
+
+        .active {
+            border: 1px solid black;
+        }
+
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: #f1f1f1;
+            min-width: 160px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            z-index: 1;
+        }
+
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+
+        .dropdown:hover .dropbtn {
+            background-image: linear-gradient(#0b1f5b, #25042f);
+        }
+
+        .dropmenuScroll {
+            height: 300px;
+            max-height: 300px;
+            overflow-y: scroll;
+            position: absolute;
+        }
+
+        #popup_view {
+            visibility: @PopupViewStatus;
+            background-color: var(--highlight);
+            position: fixed;
+            z-index: 10;
+            width: 50%;
+            left: 25%;
+            height: 70%;
+            top: 5%;
+            display: flex;
+            flex-direction: column;
+            opacity: 1;
+            box-shadow: 0px 0px 50px 1px #000;
+        }
+
+        #close_button {
+            top: 10px;
+            right: 20px;
+            transition: all 200ms;
+            font-size: 30px;
+            font-weight: bold;
+            text-decoration: none;
+            color: black;
+            float: right;
+            position: absolute;
+        }
+
+        .movie_image {
+            width: 280px;
+            height: 420px;
+            padding-top:10px;
+            float: left;
+        }
+
+        .cast {
+            padding-left: 270px;
+        }
+
+        .cast ul {
+            list-style-type: none;
+        }
+    </style>
+</head>
 
 <div class="p-4">
     <div class="container">
@@ -32,6 +133,31 @@
     <ContentTemplate>
         @if (movies != null)
         {
+            <div id="popup_view">
+                <div>
+                    <span class="classhover" id="close_button" @onclick="() => ClosePopup()">&times;</span>
+                    <h1 id="Title" style="padding-left:10px; padding-top:10px">@MovieTitle</h1>
+                    <hr>
+                    <div style="padding-left:10px">
+                        <img class="movie_image" src="@PictureAddress">
+                        <p style="padding:10px; padding-left:300px">@MovieDescription</p>
+                        <div class="cast">
+                            <h3 style="padding-left: 20px; padding-right: 10px">Cast</h3>
+                            <ul>
+                                @if (@ActorsList != null)
+                                {
+                                    @foreach (Actor actor in @ActorsList)
+                                    {
+                                        <li>@actor.Name</li>
+                                    }
+                                }
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
             <h2>Movies</h2>
             <div>
                 <div>
@@ -73,9 +199,8 @@
                     @foreach (var movie in movies)
                     {
                         <tr>
-                            <td class="classhover">@movie.Title</td>
+                            <td class="classhover" @onclick="async () => GetMovieData(movie.Id)">@movie.Title</td>
                             <td style="padding-left:30px;">@movie.ReleaseYear</td>
-
                             <td>
                                 @foreach (var genre in movie.Genres)
                                 {
@@ -235,5 +360,42 @@
     private void RedirectToAddRating(int MovieId)
     {
         NavigationManager.NavigateTo($"{PagesConstants.AddRatingToMoviePage}/{MovieId}");
+    }
+
+    public void ClosePopup()
+    {
+        PopupViewStatus = "hidden";
+    }
+
+    [Parameter] public string MovieDescription { get; set; }
+    [Parameter] public string PictureAddress { get; set; }
+    [Parameter] public string PopupViewStatus { get; set; } = "hidden";
+    [Parameter] public List<Actor> ActorsList { set; get; }
+    [Parameter] public string MovieTitle { set; get; }
+
+    public async void GetMovieData(int movieId)
+    {
+        Movie movie = await Http.Get<Movie>($"{APIConstants.MoviesEndpoint}/{movieId}");
+        ActorsList = await Http.Get<List<Actor>>($"{APIConstants.ActorsFromMovieEndpoint}/{movieId}");
+
+        var client = new HttpClient();
+        var request = new HttpRequestMessage
+        {
+            Method = HttpMethod.Get,
+            RequestUri = new Uri($"{APIConstants.ImdbApiRequestBaseAddress}/{movie.TmdbId}?api_key={APIConstants.ImdbApiRapidKey}")
+        };
+
+        Root details;
+        using (var response = await client.SendAsync(request))
+        {
+            response.EnsureSuccessStatusCode();
+            var body = await response.Content.ReadAsStringAsync();
+            details = JsonSerializer.Deserialize<Root>(body, new JsonSerializerOptions() { PropertyNameCaseInsensitive = true });
+            MovieDescription = details.Overview;
+            MovieTitle = details.Title;
+            PictureAddress = $"{APIConstants.ImdbApiPictureBaseAddreess}/{details.Poster_Path}";
+        }
+        PopupViewStatus = "visible";
+        StateHasChanged();
     }
 }
