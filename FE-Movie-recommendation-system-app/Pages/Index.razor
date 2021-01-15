@@ -5,7 +5,7 @@
 @inject AppState AppState
 @inject NavigationManager NavigationManager
 @using System.Text.Json;
-@using System.Text.Json.Serialization;
+
 <head>
     <style>
         .dropbtn {
@@ -382,7 +382,7 @@
         var request = new HttpRequestMessage
         {
             Method = HttpMethod.Get,
-            RequestUri = new Uri($"{APIConstants.ImdbApiRequestBaseAddress}/{movieId}?api_key={APIConstants.ImdbApiRapidKey}")
+            RequestUri = new Uri($"{APIConstants.ImdbApiRequestBaseAddress}/{movie.TmdbId}?api_key={APIConstants.ImdbApiRapidKey}")
         };
 
         Root details;
